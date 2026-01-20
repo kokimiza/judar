@@ -16,16 +16,24 @@
 		"publish": true
 	},
 	"devDependencies": {
+		"@biomejs/biome": "2.3.11",
 		"typescript": "5.9.3",
-		"wrangler": "4.56.0"
+		"vitest": "^4.0.17",
+		"wrangler": "4.59.2"
 	},
 	"private": true,
 	"scripts": {
 		"cf-typegen": "wrangler types",
 		"check": "tsc && wrangler deploy --dry-run",
 		"deploy": "wrangler deploy",
-		"dev": "pnpm seedLocalD1 && wrangler dev",
-		"predeploy": "wrangler d1 migrations apply DB --remote",
-		"seedLocalD1": "wrangler d1 migrations apply DB --local"
+		"dev": "npm run seedLocalD1 && wrangler dev --config wrangler.dev.json",
+		"migrate": "wrangler d1 migrations apply DB --remote",
+		"seedLocalD1": "wrangler d1 migrations apply DB --local",
+		"fmt": "biome check --fix .",
+		"test": "vitest"
+	},
+	"dependencies": {
+		"ml-matrix": "^6.12.1",
+		"ml-pca": "^4.1.1"
 	}
 }

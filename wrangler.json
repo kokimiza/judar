@@ -14,8 +14,6 @@
 		"enabled": true
 	},
 	"triggers": {
-		"crons": [
-			"0 17 * * *"
-		]
+		"crons": ["0 17 * * *"]
 	}
 }
