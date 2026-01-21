@@ -6,7 +6,7 @@ export class CloudflareAuthenticationService implements AuthenticationService {
 	private jwtAuth: JwtAuth;
 
 	constructor(jwtSecret: string) {
-		this.jwtAuth = new JwtAuth(jwtSecret);
+		this.jwtAuth = new JwtAuth(jwtSecret, "judar-api", "judar-client");
 	}
 
 	async hashPassword(

@@ -4,97 +4,47 @@
 
 ## 概要
 
-このシステムは、アンケート回答の収集・集計・クラスタリングを行うWebAPIです。クリーンアーキテクチャの原則に従って設計されており、依存関係が内側に向くように構成されています。
-
-## アーキテクチャ
-
-### 層構造
-
-```
-src/
-├── domain/                    # ドメイン層
-│   ├── entities/             # エンティティ
-│   │   ├── User.ts
-│   │   ├── Answer.ts
-│   │   └── Cluster.ts
-│   ├── values/               # 値オブジェクト
-│   │   └── DateId.ts
-│   ├── services/             # ドメインサービス
-│   │   ├── UserDomainService.ts
-│   │   └── AnswerDomainService.ts
-│   └── repositories/         # リポジトリインターフェース
-│       ├── UserRepository.ts
-│       ├── AnswerRepository.ts
-│       └── ClusterRepository.ts
-├── application/              # アプリケーション層
-│   ├── dtos/                # データ転送オブジェクト
-│   │   ├── UserRegistrationDto.ts
-│   │   ├── AnswerSubmissionDto.ts
-│   │   └── ClusterAggregationDto.ts
-│   ├── ports/               # ポート（インターフェース）
-│   │   ├── input/           # Input Port
-│   │   │   ├── UserRegistrationInputPort.ts
-│   │   │   ├── AnswerSubmissionInputPort.ts
-│   │   │   └── ClusterAggregationInputPort.ts
-│   │   └── output/          # Output Port
-│   │       ├── UserRegistrationOutputPort.ts
-│   │       ├── AnswerSubmissionOutputPort.ts
-│   │       └── ClusterAggregationOutputPort.ts
-│   └── interactors/         # インタラクター（ユースケース実装）
-│       ├── UserRegistrationInteractor.ts
-│       ├── AnswerSubmissionInteractor.ts
-│       └── ClusterAggregationInteractor.ts
-├── infrastructure/          # インフラ層
-│   └── repositories/        # リポジトリ実装
-│       ├── D1UserRepository.ts
-│       ├── D1AnswerRepository.ts
-│       └── D1ClusterRepository.ts
-├── adapters/               # アダプター層
-│   ├── controllers/        # コントローラー
-│   │   ├── UserRegistrationController.ts
-│   │   ├── AnswerSubmissionController.ts
-│   │   └── ClusterAggregationController.ts
-│   └── presenters/         # プレゼンター
-│       ├── UserRegistrationPresenter.ts
-│       ├── AnswerSubmissionPresenter.ts
-│       └── ClusterAggregationPresenter.ts
-└── index.ts               # DIコンテナ・エントリーポイント
-```
-
-### 依存関係の向き
-
-```
-外側 → 内側
-Adapters → Application → Domain
-Infrastructure → Domain
-```
-
-- **ドメイン層**: ビジネスロジックの中核。他の層に依存しない
-- **アプリケーション層**: ユースケースを実装。ドメイン層のみに依存
-- **インフラ層**: 外部システム（DB等）との接続。ドメイン層のインターフェースを実装
-- **アダプター層**: 外部からの入力とレスポンス処理
+このシステムは、JWT認証付きのアンケート回答収集・集計・クラスタリングを行うWebAPIです。クリーンアーキテクチャの原則に従って設計されており、依存関係が内側に向くように構成されています。
 
 ## 機能
 
-### 1. ユーザー登録 (`/signup`)
-- ユーザー名の登録
+### 1. ユーザー登録 (`POST /signup`)
+- ユーザー名、メールアドレス、パスワードの登録
 - 重複チェック機能
+- パスワードハッシュ化
 - バリデーション機能
 
-### 2. アンケート回答投稿 (`/submit`)
+### 2. ログイン (`POST /login`)
+- メールアドレス・パスワード認証
+- JWTトークン発行
+- 認証情報の検証
+
+### 3. 質問作成 (`POST /questions`) ※認証必要
+- 質問と選択肢の作成
+- バリデーション機能
+
+### 4. アンケート回答投稿 (`POST /submit`) ※認証必要
 - 複数質問への回答を一括投稿
+- 認証されたユーザーのみ投稿可能
 - 重複回答チェック
 - データバリデーション
 
-### 3. 日次集計・クラスタリング (scheduled)
+### 5. 日次集計・クラスタリング (scheduled)
 - 未集計データの自動処理
 - ユーザーのクラスタリング
 - バッチ処理による効率的な集計
 
+## セキュリティ
+
+- **JWT認証**: Bearer Token方式
+- **パスワードハッシュ化**: SHA-256 + ソルト
+- **CORS対応**: クロスオリジンリクエスト対応
+- **認証コンテキスト**: リクエストレベルでの認証状態管理
+
 ## データベーススキーマ
 
 ### マスターテーブル
-- `m_users`: ユーザーマスター
+- `m_users`: ユーザーマスター（認証情報含む）
 - `m_questions`: 質問マスター
 - `m_choices`: 選択肢マスター
 - `m_survey_dates`: 日付マスター
@@ -115,25 +65,43 @@ npm install
 
 ### 2. データベースマイグレーション
 ```bash
-npx wrangler d1 migrations apply --local
+# ローカル環境
+npx wrangler d1 execute d1-judar-database --file=migrations/0001_create_comments_table.sql
+npx wrangler d1 execute d1-judar-database --file=migrations/0002_create_users_table.sql
+npx wrangler d1 execute d1-judar-database --file=migrations/0003_add_user_auth.sql
+
+# 本番環境
+npx wrangler d1 execute d1-judar-database --file=migrations/0001_create_comments_table.sql --remote
+npx wrangler d1 execute d1-judar-database --file=migrations/0002_create_users_table.sql --remote
+npx wrangler d1 execute d1-judar-database --file=migrations/0003_add_user_auth.sql --remote
 ```
 
-### 3. 開発サーバー起動
+### 3. 環境変数設定
 ```bash
-npm run dev
+# 本番環境でJWT秘密鍵を設定
+wrangler secret put JWT_SECRET
 ```
 
-サーバーは `http://localhost:8787` で起動します。
+### 4. 開発サーバー起動
+```bash
+# 開発用設定ファイルを使用
+wrangler dev --config wrangler.dev.json
+```
 
 ## API仕様
 
-### ユーザー登録
+### 認証不要エンドポイント
+
+#### ユーザー登録
 
 **POST** `/signup`
 
+**リクエスト:**
 ```json
 {
-  "userName": "田中太郎"
+  "userName": "testuser",
+  "email": "test@example.com",
+  "password": "securepassword123"
 }
 ```
 
@@ -142,7 +110,8 @@ npm run dev
 {
   "status": "ok",
   "userId": 1,
-  "userName": "田中太郎"
+  "userName": "testuser",
+  "email": "test@example.com"
 }
 ```
 
@@ -150,21 +119,102 @@ npm run dev
 ```json
 {
   "status": "error",
-  "message": "User name already exists"
+  "message": "Email already exists"
 }
 ```
 
-### アンケート回答投稿
+#### ログイン
+
+**POST** `/login`
+
+**リクエスト:**
+```json
+{
+  "email": "test@example.com",
+  "password": "securepassword123"
+}
+```
+
+**レスポンス（成功）:**
+```json
+{
+  "success": true,
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "userId": 1,
+    "userName": "testuser",
+    "email": "test@example.com"
+  }
+}
+```
+
+**レスポンス（エラー）:**
+```json
+{
+  "success": false,
+  "error": "Invalid email or password"
+}
+```
+
+### 認証必要エンドポイント
+
+**認証ヘッダー:**
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+
+#### 質問作成
+
+**POST** `/questions`
+
+**リクエスト:**
+```json
+{
+  "questionText": "あなたの好きな色は何ですか？",
+  "choices": [
+    {"text": "赤", "value": 1},
+    {"text": "青", "value": 2},
+    {"text": "緑", "value": 3},
+    {"text": "黄", "value": 4}
+  ]
+}
+```
+
+**レスポンス（成功）:**
+```json
+{
+  "status": "ok",
+  "questionId": 1,
+  "questionText": "あなたの好きな色は何ですか？",
+  "choices": [
+    {"id": 1, "text": "赤", "value": 1},
+    {"id": 2, "text": "青", "value": 2},
+    {"id": 3, "text": "緑", "value": 3},
+    {"id": 4, "text": "黄", "value": 4}
+  ]
+}
+```
+
+**レスポンス（エラー）:**
+```json
+{
+  "status": "error",
+  "message": "Question already exists"
+}
+```
+
+#### アンケート回答投稿
 
 **POST** `/submit`
 
+**リクエスト:**
 ```json
 {
-  "user_id": 1,
+  "userId": 1,
   "answers": [
-    {"question_id": 1, "choice_id": 2},
-    {"question_id": 2, "choice_id": 1},
-    {"question_id": 3, "choice_id": 3}
+    {"questionId": 1, "choiceId": 2},
+    {"questionId": 2, "choiceId": 1},
+    {"questionId": 3, "choiceId": 3}
   ]
 }
 ```
@@ -180,7 +230,7 @@ npm run dev
 ```json
 {
   "status": "error",
-  "message": "Duplicate answers for the same question are not allowed"
+  "message": "Unauthorized access"
 }
 ```
 
@@ -188,56 +238,55 @@ npm run dev
 
 ### 1. ユーザー登録
 ```bash
-curl -X POST http://localhost:8787/signup \
-  -H "Content-Type: application/json" \
-  -d '{"userName": "田中太郎"}'
-```
-
-### 2. アンケート回答投稿
-```bash
-curl -X POST http://localhost:8787/submit \
+curl -X POST https://your-worker.your-subdomain.workers.dev/signup \
   -H "Content-Type: application/json" \
   -d '{
-    "user_id": 1,
-    "answers": [
-      {"question_id": 1, "choice_id": 2},
-      {"question_id": 2, "choice_id": 1},
-      {"question_id": 3, "choice_id": 3}
+    "userName": "testuser",
+    "email": "test@example.com",
+    "password": "securepassword123"
+  }'
+```
+
+### 2. ログイン
+```bash
+curl -X POST https://your-worker.your-subdomain.workers.dev/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com",
+    "password": "securepassword123"
+  }'
+```
+
+### 3. 質問作成（認証必要）
+```bash
+curl -X POST https://your-worker.your-subdomain.workers.dev/questions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <JWT_TOKEN>" \
+  -d '{
+    "questionText": "あなたの好きな色は何ですか？",
+    "choices": [
+      {"text": "赤", "value": 1},
+      {"text": "青", "value": 2},
+      {"text": "緑", "value": 3},
+      {"text": "黄", "value": 4}
     ]
   }'
 ```
 
-### 3. 複数ユーザーでのテスト
+### 4. アンケート回答投稿（認証必要）
 ```bash
-# ユーザー2を登録
-curl -X POST http://localhost:8787/signup \
+curl -X POST https://your-worker.your-subdomain.workers.dev/submit \
   -H "Content-Type: application/json" \
-  -d '{"userName": "佐藤花子"}'
-
-# ユーザー2の回答投稿
-curl -X POST http://localhost:8787/submit \
-  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <JWT_TOKEN>" \
   -d '{
-    "user_id": 2,
+    "userId": 1,
     "answers": [
-      {"question_id": 1, "choice_id": 1},
-      {"question_id": 2, "choice_id": 3},
-      {"question_id": 3, "choice_id": 2}
+      {"questionId": 1, "choiceId": 2},
+      {"questionId": 2, "choiceId": 1},
+      {"questionId": 3, "choiceId": 3}
     ]
   }'
 ```
-
-## バリデーション機能
-
-### ユーザー登録時
-- ユーザー名の空文字チェック
-- ユーザー名の長さチェック（100文字以内）
-- ユーザー名の重複チェック
-
-### 回答投稿時
-- 回答データの存在チェック
-- 同一質問への重複回答チェック
-- 質問ID・選択肢IDの妥当性チェック
 
 ## 技術スタック
 
@@ -245,34 +294,14 @@ curl -X POST http://localhost:8787/submit \
 - **Database**: Cloudflare D1 (SQLite)
 - **Language**: TypeScript
 - **Architecture**: Clean Architecture
+- **Authentication**: JWT (HS256)
+- **Password Hashing**: SHA-256 + Salt
 - **Build Tool**: Wrangler
 
-## 開発・デプロイ
+## セキュリティ考慮事項
 
-### ローカル開発
-```bash
-npm run dev
-```
-
-### デプロイ
-```bash
-npm run deploy
-```
-
-### マイグレーション（本番）
-```bash
-npx wrangler d1 migrations apply --remote
-```
-
-## 設計思想
-
-このシステムは以下の原則に従って設計されています：
-
-1. **依存関係逆転の原則**: 高レベルモジュールが低レベルモジュールに依存しない
-2. **単一責任の原則**: 各クラスは単一の責任を持つ
-3. **開放閉鎖の原則**: 拡張に対して開いており、修正に対して閉じている
-4. **インターフェース分離の原則**: クライアントが使用しないメソッドに依存しない
-5. **依存関係注入**: 依存関係は外部から注入される
-
-これにより、テスタブルで保守性の高いコードベースを実現しています。
-
+1. **JWT秘密鍵管理**: 本番環境では強力なランダム文字列を使用
+2. **HTTPS必須**: 本番環境では必ずHTTPS経由でアクセス
+3. **パスワード管理**: ハッシュ化されたパスワードのみ保存
+4. **認証コンテキスト**: リクエストレベルでの適切な認証状態管理
+5. **CORS設定**: 適切なクロスオリジン設定

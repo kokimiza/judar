@@ -3,13 +3,19 @@ export interface JwtPayload {
 	userName: string;
 	iat: number;
 	exp: number;
+	iss?: string; // issuer - トークン発行者
+	aud?: string; // audience - トークンの対象サービス
 }
 
 export class JwtAuth {
 	private secret: string;
+	private issuer: string;
+	private audience: string;
 
-	constructor(secret: string) {
+	constructor(secret: string, issuer?: string, audience?: string) {
 		this.secret = secret;
+		this.issuer = issuer || "judar-api";
+		this.audience = audience || "judar-client";
 	}
 
 	async generateToken(userId: number, userName: string): Promise<string> {
@@ -23,6 +29,8 @@ export class JwtAuth {
 			userName,
 			iat: Math.floor(Date.now() / 1000),
 			exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // 24時間
+			iss: this.issuer,
+			aud: this.audience,
 		};
 
 		const encodedHeader = this.base64UrlEncode(JSON.stringify(header));
@@ -57,6 +65,16 @@ export class JwtAuth {
 
 			// 有効期限チェック
 			if (payload.exp < Math.floor(Date.now() / 1000)) {
+				return null;
+			}
+
+			// issuer チェック（設定されている場合）
+			if (payload.iss && payload.iss !== this.issuer) {
+				return null;
+			}
+
+			// audience チェック（設定されている場合）
+			if (payload.aud && payload.aud !== this.audience) {
 				return null;
 			}
 
