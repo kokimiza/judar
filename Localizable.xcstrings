@@ -1,0 +1,78 @@
+{
+  "sourceLanguage" : "ja",
+  "strings" : {
+    "[ 家族と共有する ]" : {
+
+    },
+    "[LOG]" : {
+
+    },
+    "[SET]" : {
+
+    },
+    "[耐性なし]" : {
+
+    },
+    "[閉じる]" : {
+
+    },
+    "%@:%lld" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@:%2$lld"
+          }
+        }
+      }
+    },
+    "%lld回" : {
+
+    },
+    "HP [%@] %lld/%lld" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "HP [%1$@] %2$lld/%3$lld"
+          }
+        }
+      }
+    },
+    "OK" : {
+
+    },
+    "PARTY HP %lld/%lld" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "PARTY HP %1$lld/%2$lld"
+          }
+        }
+      }
+    },
+    "ファミリー共有" : {
+
+    },
+    "別 iCloud アカウント間のファミリー共有は\n次バージョンで対応予定です。" : {
+
+    },
+    "耐性: %@" : {
+
+    },
+    "記録ログ" : {
+
+    },
+    "設定" : {
+
+    },
+    "近日公開" : {
+
+    },
+    "連続討伐: %lld" : {
+
+    }
+  },
+  "version" : "1.2"
+}
