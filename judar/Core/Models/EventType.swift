@@ -15,6 +15,15 @@ enum EventType: String, CaseIterable, Codable, Sendable {
         }
     }
 
+    var icon: String {
+        switch self {
+        case .poop:       return "💩"
+        case .pee:        return "💧"
+        case .breastfeed: return "🤱"
+        case .formula:    return "🍼"
+        }
+    }
+
     var attackType: AttackType {
         switch self {
         case .poop:       return .physical

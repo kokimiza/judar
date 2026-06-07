@@ -17,13 +17,24 @@ enum WEventType: String, CaseIterable {
         case .formula:    return "ミルク"
         }
     }
+
+    var memberName: String {
+        switch self {
+        case .poop:       return "ブリ丸"
+        case .pee:        return "オシ魔神"
+        case .breastfeed: return "ミルフ"
+        case .formula:    return "粉白"
+        }
+    }
 }
 
+// Mirrors WidgetDataBridge.Payload in the main app — same Codable keys.
 struct WDailyCounts: Codable {
-    var poop: Int       = 0
-    var pee: Int        = 0
-    var breastfeed: Int = 0
-    var formula: Int    = 0
+    var poop: Int             = 0
+    var pee: Int              = 0
+    var breastfeed: Int       = 0
+    var formula: Int          = 0
+    var lastActionDate: Date? = nil
 
     subscript(et: WEventType) -> Int {
         switch et {
@@ -35,13 +46,13 @@ struct WDailyCounts: Codable {
     }
 }
 
-func readWidgetCounts() -> WDailyCounts {
+func readWidgetData() -> WDailyCounts {
     guard
         let defaults = UserDefaults(suiteName: "group.productions.jocarium.judar"),
-        let data     = defaults.data(forKey: "dailyCounts"),
-        let counts   = try? JSONDecoder().decode(WDailyCounts.self, from: data)
+        let data     = defaults.data(forKey: "widgetPayload"),
+        let payload  = try? JSONDecoder().decode(WDailyCounts.self, from: data)
     else { return WDailyCounts() }
-    return counts
+    return payload
 }
 
 // MARK: - Timeline
@@ -53,15 +64,24 @@ struct JudarWidgetEntry: TimelineEntry {
 
 struct JudarWidgetProvider: TimelineProvider {
     func placeholder(in context: Context) -> JudarWidgetEntry {
-        JudarWidgetEntry(date: .now, counts: WDailyCounts())
+        let sample = WDailyCounts(poop: 3, pee: 5, breastfeed: 2, formula: 1, lastActionDate: .now)
+        return JudarWidgetEntry(date: .now, counts: sample)
     }
+
     func getSnapshot(in context: Context, completion: @escaping (JudarWidgetEntry) -> Void) {
-        completion(JudarWidgetEntry(date: .now, counts: readWidgetCounts()))
+        let data = context.isPreview ? placeholder(in: context).counts : readWidgetData()
+        completion(JudarWidgetEntry(date: .now, counts: data))
     }
+
     func getTimeline(in context: Context, completion: @escaping (Timeline<JudarWidgetEntry>) -> Void) {
-        let entry = JudarWidgetEntry(date: .now, counts: readWidgetCounts())
-        let next  = Calendar.current.date(byAdding: .hour, value: 1, to: .now) ?? .now
-        completion(Timeline(entries: [entry], policy: .after(next)))
+        let entry = JudarWidgetEntry(date: .now, counts: readWidgetData())
+        // Refresh at midnight so daily counts reset automatically
+        let midnight = Calendar.current.nextDate(
+            after: .now,
+            matching: DateComponents(hour: 0, minute: 0, second: 0),
+            matchingPolicy: .nextTime
+        ) ?? Calendar.current.date(byAdding: .hour, value: 6, to: .now)!
+        completion(Timeline(entries: [entry], policy: .after(midnight)))
     }
 }
 
@@ -74,7 +94,7 @@ struct JudarWidget: Widget {
             WidgetEntryView(entry: entry)
         }
         .configurationDisplayName("judar")
-        .description("今日の記録")
+        .description("今日の育児記録")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }

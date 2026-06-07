@@ -53,10 +53,12 @@ private final class SeededRNG {
 
 enum BattleLogic {
 
-    // Main entry point. Pure: all randomness injected via RandomSource.
+    // Main entry point. Pure: all randomness + enemy pool injected.
+    // availableEnemies: CloudKit-cached templates; falls back to EnemyRoster.all when empty.
     static func resolveAttack(
         eventType: EventType,
         state: BattleState,
+        availableEnemies: [EnemyTemplate] = [],
         randomSource: RandomSource
     ) -> (newState: BattleState, result: AttackResult) {
 
@@ -108,8 +110,9 @@ enum BattleLogic {
             killStreak += 1
             logLines.append("> \(enemy.template.name) を たおした！")
             logLines.append("> *** 連続討伐 \(killStreak) ***")
-            // Spawn next enemy
+            // Spawn next enemy from CloudKit pool (or hardcoded fallback)
             let nextTemplate = EnemyRoster.randomTemplate(
+                from: availableEnemies,
                 excluding: enemy.template.name,
                 randomSource: randomSource
             )

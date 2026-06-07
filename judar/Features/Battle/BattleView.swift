@@ -12,7 +12,9 @@ extension Color {
 // MARK: - BattleView
 
 struct BattleView: View {
-    @Environment(BattleViewModel.self) private var vm
+    @Environment(BattleViewModel.self)  private var vm
+    @Environment(ProfileViewModel.self) private var profileVM
+    @Environment(AuthService.self)      private var authSvc
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \BabyEventRecord.timestamp, order: .reverse)
     private var records: [BabyEventRecord]
@@ -30,7 +32,7 @@ struct BattleView: View {
             VStack(spacing: 8) {
                 topBar
                 Spacer(minLength: 0)
-                EnemyView(enemy: vm.battleState.enemy, isFlashing: enemyFlashing)
+                EnemyView(enemy: vm.battleState.enemy, level: profileVM.enemyLevel, isFlashing: enemyFlashing)
                 Spacer(minLength: 0)
                 BattleLogView(lines: vm.battleState.battleLog)
                 PartyView(todayCounts: vm.todayCounts(from: records), attackingType: attackingType)
@@ -41,7 +43,11 @@ struct BattleView: View {
             .padding(.top, 8)
         }
         .sheet(isPresented: $showHistory)  { HistoryView() }
-        .sheet(isPresented: $showSettings) { SettingsView() }
+        .sheet(isPresented: $showSettings) {
+            SettingsView()
+                .environment(profileVM)
+                .environment(authSvc)
+        }
         .onAppear { prevEnemyHP = vm.battleState.enemy.currentHP }
         .onChange(of: vm.battleState.enemy.currentHP) { old, new in
             if new < old { triggerEnemyFlash() }
@@ -103,7 +109,7 @@ struct BattleView: View {
 
     private func fireEvent(_ eventType: EventType) {
         attackingType = eventType
-        vm.logEvent(eventType, allRecords: records)
+        vm.logEvent(eventType, allRecords: records, familyId: profileVM.familyId, userId: profileVM.userId)
         Task {
             try? await Task.sleep(for: .milliseconds(400))
             attackingType = nil

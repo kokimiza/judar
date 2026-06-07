@@ -2,14 +2,20 @@ import SwiftUI
 
 struct EnemyView: View {
     let enemy: Enemy
-    // Driven by parent via .onChange to trigger flash when HP changes
+    let level: Int
     var isFlashing: Bool = false
 
     var body: some View {
         VStack(spacing: 6) {
-            Text(enemy.template.name)
-                .font(.system(.title2, design: .monospaced))
-                .foregroundColor(.crtRed)
+            // Level + name row
+            HStack(spacing: 6) {
+                Text("Lv.\(level)")
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundColor(.crtDimAmber)
+                Text(enemy.template.name)
+                    .font(.system(.title2, design: .monospaced))
+                    .foregroundColor(.crtRed)
+            }
 
             hpBar
 

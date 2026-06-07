@@ -4,16 +4,24 @@ import SwiftData
 @Observable
 @MainActor
 final class HistoryViewModel {
-    private(set) var groupedDays: [(day: Date, counts: DailyCounts, records: [EventRecord])] = []
+    private(set) var groupedDays: [(day: Date, counts: DailyCounts, records: [BabyEventRecord])] = []
 
     func load(records: [BabyEventRecord], calendar: Calendar = .current) {
-        let eventRecords = records.compactMap { $0.toEventRecord() }
-        let grouped = DailyStats.groupByDay(records: eventRecords, calendar: calendar)
-        groupedDays = grouped.map { day, dayRecords in
-            var counts = DailyCounts()
-            for r in dayRecords { counts[r.eventType] += 1 }
-            return (day, counts, dayRecords)
+        var dayMap: [Date: [BabyEventRecord]] = [:]
+        for record in records {
+            let day = calendar.startOfDay(for: record.timestamp)
+            dayMap[day, default: []].append(record)
         }
+        groupedDays = dayMap
+            .sorted { $0.key > $1.key }
+            .map { day, dayRecords in
+                let sorted = dayRecords.sorted { $0.timestamp > $1.timestamp }
+                var counts = DailyCounts()
+                for r in sorted {
+                    if let et = r.eventType { counts[et] += 1 }
+                }
+                return (day, counts, sorted)
+            }
     }
 
     func dayLabel(for date: Date) -> String {
@@ -21,9 +29,5 @@ final class HistoryViewModel {
         fmt.dateFormat = "M月d日(E)"
         fmt.locale = Locale(identifier: "ja_JP")
         return fmt.string(from: date)
-    }
-
-    func delete(record: BabyEventRecord, from context: ModelContext) {
-        context.delete(record)
     }
 }

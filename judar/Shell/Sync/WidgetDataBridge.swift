@@ -3,25 +3,32 @@ import WidgetKit
 
 struct WidgetDataBridge {
     static let appGroupID = "group.productions.jocarium.judar"
-    static let countsKey  = "dailyCounts"
+    static let payloadKey = "widgetPayload"
 
-    static func write(counts: DailyCounts) {
+    // Payload written by the app and read by the widget.
+    // Fields mirror WDailyCounts in JudarWidget.swift (same Codable keys).
+    struct Payload: Codable {
+        var poop: Int           = 0
+        var pee: Int            = 0
+        var breastfeed: Int     = 0
+        var formula: Int        = 0
+        var lastActionDate: Date? = nil
+    }
+
+    static func write(counts: DailyCounts, lastActionDate: Date = .now) {
         guard let defaults = UserDefaults(suiteName: appGroupID) else { return }
-        if let data = try? JSONEncoder().encode(counts) {
-            defaults.set(data, forKey: countsKey)
+        let payload = Payload(
+            poop: counts.poop,
+            pee: counts.pee,
+            breastfeed: counts.breastfeed,
+            formula: counts.formula,
+            lastActionDate: lastActionDate
+        )
+        if let data = try? JSONEncoder().encode(payload) {
+            defaults.set(data, forKey: payloadKey)
         }
     }
 
-    static func read() -> DailyCounts {
-        guard
-            let defaults = UserDefaults(suiteName: appGroupID),
-            let data = defaults.data(forKey: countsKey),
-            let counts = try? JSONDecoder().decode(DailyCounts.self, from: data)
-        else { return DailyCounts() }
-        return counts
-    }
-
-    // Call from app side after every event log so the widget refreshes immediately
     static func requestWidgetTimelineReload() {
         WidgetCenter.shared.reloadTimelines(ofKind: "JudarWidget")
     }

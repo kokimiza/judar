@@ -73,14 +73,20 @@ enum EnemyRoster {
         Enemy(template: all[2])  // げっぷ竜
     }
 
+    // Hardcoded-fallback version (uses EnemyRoster.all)
     static func randomTemplate(excluding name: String? = nil, randomSource: RandomSource) -> EnemyTemplate {
-        let pool: [EnemyTemplate]
-        if let name {
-            let candidates = all.filter { $0.name != name }
-            pool = candidates.isEmpty ? all : candidates
-        } else {
-            pool = all
-        }
-        return pool[randomSource.nextInt(pool.count)]
+        randomTemplate(from: all, excluding: name, randomSource: randomSource)
+    }
+
+    // Pool-injection version used when CloudKit enemies are cached (FCIS: pure, data-injected)
+    static func randomTemplate(
+        from pool: [EnemyTemplate],
+        excluding name: String? = nil,
+        randomSource: RandomSource
+    ) -> EnemyTemplate {
+        let source = pool.isEmpty ? all : pool
+        let candidates = name.map { n in source.filter { $0.name != n } } ?? source
+        let finalPool = candidates.isEmpty ? source : candidates
+        return finalPool[randomSource.nextInt(max(1, finalPool.count))]
     }
 }
