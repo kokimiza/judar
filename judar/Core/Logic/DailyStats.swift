@@ -8,7 +8,8 @@ enum DailyStats {
         calendar: Calendar = .current
     ) -> DailyCounts {
         var counts = DailyCounts()
-        for record in records where calendar.isDate(record.timestamp, inSameDayAs: date) {
+        for record in records
+        where calendar.isDate(record.timestamp, inSameDayAs: date) {
             counts[record.eventType] += 1
         }
         return counts
@@ -23,10 +24,14 @@ enum DailyStats {
             let day = calendar.startOfDay(for: record.timestamp)
             dayMap[day, default: []].append(record)
         }
-        return dayMap
+        return
+            dayMap
             .sorted { $0.key > $1.key }  // newest day first
             .map { key, value in
-                (day: key, records: value.sorted { $0.timestamp > $1.timestamp })
+                (
+                    day: key,
+                    records: value.sorted { $0.timestamp > $1.timestamp }
+                )
             }
     }
 }

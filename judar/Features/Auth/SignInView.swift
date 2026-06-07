@@ -1,12 +1,12 @@
-import SwiftUI
 import AuthenticationServices
+import SwiftUI
 
 struct SignInView: View {
     @Environment(AuthService.self) private var authService
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Color.rpgBackground.ignoresSafeArea()
 
             VStack(spacing: 32) {
                 Spacer()
@@ -40,7 +40,8 @@ struct SignInView: View {
                         switch result {
                         case .success(let authorization):
                             guard
-                                let cred = authorization.credential as? ASAuthorizationAppleIDCredential
+                                let cred = authorization.credential
+                                    as? ASAuthorizationAppleIDCredential
                             else { return }
                             authService.handleSignIn(userId: cred.user)
                         case .failure(let error):
@@ -67,7 +68,12 @@ struct SignInView: View {
                             .foregroundColor(.crtDimAmber)
                             .frame(width: 280)
                             .padding(.vertical, 10)
-                            .overlay(Rectangle().stroke(Color.crtDimAmber, lineWidth: 1))
+                            .overlay(
+                                Rectangle().stroke(
+                                    Color.crtDimAmber,
+                                    lineWidth: 1
+                                )
+                            )
                     }
                     .buttonStyle(.plain)
 

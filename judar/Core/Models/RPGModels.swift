@@ -2,22 +2,53 @@ import Foundation
 
 // MARK: - Party
 
-struct PartyMember: Equatable, Sendable {
+struct PartyMember: Sendable {
     let eventType: EventType
-    let name: String
     let role: String
     let baseDamage: Int
     let accuracy: Double  // 0.0–1.0
 
     static let all: [PartyMember] = [
-        PartyMember(eventType: .poop,       name: "ブリ丸",   role: "戦士",     baseDamage: 15, accuracy: 0.75),
-        PartyMember(eventType: .pee,        name: "オシ魔神", role: "魔法使い", baseDamage: 12, accuracy: 0.90),
-        PartyMember(eventType: .breastfeed, name: "ミルフ",   role: "僧侶",     baseDamage: 7,  accuracy: 0.95),
-        PartyMember(eventType: .formula,    name: "粉白",     role: "白魔道士", baseDamage: 5,  accuracy: 0.95),
+        PartyMember(
+            eventType: .poop,
+            role: "戦士",
+            baseDamage: 15,
+            accuracy: 0.75
+        ),
+        PartyMember(
+            eventType: .pee,
+            role: "魔法使い",
+            baseDamage: 12,
+            accuracy: 0.90
+        ),
+        PartyMember(
+            eventType: .breastfeed,
+            role: "僧侶",
+            baseDamage: 7,
+            accuracy: 0.95
+        ),
+        PartyMember(
+            eventType: .formula,
+            role: "白魔道士",
+            baseDamage: 5,
+            accuracy: 0.95
+        ),
+        PartyMember(
+            eventType: .pumpedMilk,
+            role: "バード",
+            baseDamage: 6,
+            accuracy: 0.95
+        ),
     ]
 
     static func member(for eventType: EventType) -> PartyMember {
         all.first { $0.eventType == eventType }!  // exhaustive enum — safe
+    }
+}
+
+extension PartyMember: Equatable {
+    nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.eventType == rhs.eventType
     }
 }
 
@@ -28,7 +59,7 @@ extension EventType {
 
 // MARK: - Enemy
 
-struct EnemyTemplate: Equatable, Sendable {
+struct EnemyTemplate: Sendable {
     let name: String
     let maxHP: Int
     let resistances: Set<AttackType>
@@ -37,7 +68,17 @@ struct EnemyTemplate: Equatable, Sendable {
     let asciiArt: String  // 3-line text art shown under enemy name
 }
 
-struct Enemy: Equatable, Sendable {
+extension EnemyTemplate: Equatable {
+    nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.name == rhs.name && lhs.maxHP == rhs.maxHP
+            && lhs.resistances == rhs.resistances
+            && lhs.weaknesses == rhs.weaknesses
+            && lhs.attackPower == rhs.attackPower
+            && lhs.asciiArt == rhs.asciiArt
+    }
+}
+
+struct Enemy: Sendable {
     let template: EnemyTemplate
     var currentHP: Int
 
@@ -47,12 +88,20 @@ struct Enemy: Equatable, Sendable {
     }
 
     var isDead: Bool { currentHP <= 0 }
-    var hpFraction: Double { Double(max(0, currentHP)) / Double(template.maxHP) }
+    var hpFraction: Double {
+        Double(max(0, currentHP)) / Double(template.maxHP)
+    }
+}
+
+extension Enemy: Equatable {
+    nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.template == rhs.template && lhs.currentHP == rhs.currentHP
+    }
 }
 
 // MARK: - Battle
 
-struct BattleState: Equatable, Sendable {
+struct BattleState: Sendable {
     var enemy: Enemy
     var partyHP: Int
     var killStreak: Int
@@ -62,18 +111,45 @@ struct BattleState: Equatable, Sendable {
     static let logCap = 20
 }
 
-struct AttackResult: Equatable, Sendable {
+extension BattleState: Equatable {
+    nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.enemy == rhs.enemy && lhs.partyHP == rhs.partyHP
+            && lhs.killStreak == rhs.killStreak
+            && lhs.battleLog == rhs.battleLog
+    }
+}
+
+struct AttackResult: Sendable {
     let playerDamage: Int
     let enemyCounterDamage: Int
     let isResisted: Bool
     let isWeakness: Bool
+    let isCritical: Bool
     let enemyDefeated: Bool
     let logLines: [String]
 }
 
+extension AttackResult: Equatable {
+    nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.playerDamage == rhs.playerDamage
+            && lhs.enemyCounterDamage == rhs.enemyCounterDamage
+            && lhs.isResisted == rhs.isResisted
+            && lhs.isWeakness == rhs.isWeakness
+            && lhs.isCritical == rhs.isCritical
+            && lhs.enemyDefeated == rhs.enemyDefeated
+            && lhs.logLines == rhs.logLines
+    }
+}
+
 // MARK: - Event Record (pure value; Shell converts @Model -> this)
 
-struct EventRecord: Equatable, Sendable {
+struct EventRecord: Sendable {
     let eventType: EventType
     let timestamp: Date
+}
+
+extension EventRecord: Equatable {
+    nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.eventType == rhs.eventType && lhs.timestamp == rhs.timestamp
+    }
 }

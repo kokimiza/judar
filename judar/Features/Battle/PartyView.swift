@@ -24,8 +24,6 @@ private struct PartyMemberCard: View {
 
     var body: some View {
         VStack(spacing: 2) {
-            Text(member.name)
-                .font(.system(size: 11, weight: .bold, design: .monospaced))
             Text(member.role)
                 .font(.system(size: 9, design: .monospaced))
                 .opacity(0.6)
@@ -34,9 +32,9 @@ private struct PartyMemberCard: View {
         }
         .padding(6)
         .frame(maxWidth: .infinity)
-        .foregroundColor(isAttacking ? .black : .crtAmber)
-        .background(isAttacking ? Color.crtAmber : Color.black)
-        .overlay(Rectangle().stroke(Color.crtAmber.opacity(0.5), lineWidth: 1))
+        .foregroundColor(isAttacking ? .black : .rpgGold)
+        .background(isAttacking ? Color.rpgGold : Color.rpgSurface)
+        .overlay(Rectangle().stroke(Color.rpgBorder.opacity(0.6), lineWidth: 1))
         .animation(.easeOut(duration: 0.15), value: isAttacking)
     }
 }

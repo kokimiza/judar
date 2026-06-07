@@ -15,8 +15,8 @@ struct FamilySharingView: View {
                     .font(.system(.caption, design: .monospaced))
                     .foregroundColor(.crtDimAmber)
             } else {
-                infoRow(label: "ユーザーID",  value: profileVM.userId)
-                infoRow(label: "共有コード",   value: profileVM.shareCode)
+                infoRow(label: "ユーザーID", value: profileVM.userId)
+                infoRow(label: "共有コード", value: profileVM.shareCode)
 
                 Button {
                     showJoin = true
@@ -25,7 +25,12 @@ struct FamilySharingView: View {
                         .font(.system(.body, design: .monospaced))
                         .foregroundColor(.crtAmber)
                         .padding(8)
-                        .overlay(Rectangle().stroke(Color.crtAmber.opacity(0.5), lineWidth: 1))
+                        .overlay(
+                            Rectangle().stroke(
+                                Color.crtAmber.opacity(0.5),
+                                lineWidth: 1
+                            )
+                        )
                 }
                 .buttonStyle(.plain)
                 .padding(.top, 4)

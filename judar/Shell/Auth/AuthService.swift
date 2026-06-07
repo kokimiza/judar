@@ -13,8 +13,8 @@ final class AuthService {
     // Either condition allows the app to boot
     var canProceed: Bool { isAuthenticated || isGuest }
 
-    private let userIdKey  = "appleSignInUserId"
-    private let guestKey   = "guestModeActive"
+    private let userIdKey = "appleSignInUserId"
+    private let guestKey = "guestModeActive"
 
     init() {
         // Restore guest flag across launches so guest users aren't re-prompted
@@ -24,7 +24,8 @@ final class AuthService {
     // MARK: - Apple Sign In
 
     func checkStoredAuth() async -> Bool {
-        guard let storedId = UserDefaults.standard.string(forKey: userIdKey) else {
+        guard let storedId = UserDefaults.standard.string(forKey: userIdKey)
+        else {
             return false
         }
         let provider = ASAuthorizationAppleIDProvider()
@@ -38,7 +39,10 @@ final class AuthService {
                 return false
             }
         } catch {
-            // Network unavailable — trust the stored ID
+            // credential state check failed (offline or transient error).
+            // NOTE: CloudKit record deletion does NOT revoke this credential —
+            // only removing the app in iOS Settings > Apple ID > Apps revokes it.
+            // Trust the stored Apple ID so the app works offline.
             isAuthenticated = true
             return true
         }
@@ -48,7 +52,7 @@ final class AuthService {
         // Upgrade from guest to signed-in if needed
         UserDefaults.standard.set(userId, forKey: userIdKey)
         UserDefaults.standard.removeObject(forKey: guestKey)
-        isGuest         = false
+        isGuest = false
         isAuthenticated = true
     }
 
@@ -67,6 +71,6 @@ final class AuthService {
         UserDefaults.standard.removeObject(forKey: userIdKey)
         UserDefaults.standard.removeObject(forKey: guestKey)
         isAuthenticated = false
-        isGuest         = false
+        isGuest = false
     }
 }

@@ -1,115 +1,215 @@
-import SwiftUI
+import OSLog
 import SwiftData
+import SwiftUI
 
-// MARK: - CRT Color Theme
-
-extension Color {
-    static let crtAmber    = Color(red: 1.0, green: 0.71, blue: 0.0)
-    static let crtDimAmber = Color(red: 1.0, green: 0.71, blue: 0.0).opacity(0.45)
-    static let crtRed      = Color(red: 1.0, green: 0.25, blue: 0.20)
-}
+private let bvlog = Logger(subsystem: "productions.jocarium.judar", category: "BattleView")
 
 // MARK: - BattleView
 
 struct BattleView: View {
-    @Environment(BattleViewModel.self)  private var vm
+    @Environment(BattleViewModel.self) private var vm
     @Environment(ProfileViewModel.self) private var profileVM
-    @Environment(AuthService.self)      private var authSvc
-    @Environment(\.modelContext) private var modelContext
+    @Environment(AuthService.self) private var authSvc
+    @Environment(ThemeManager.self) private var themeManager
     @Query(sort: \BabyEventRecord.timestamp, order: .reverse)
     private var records: [BabyEventRecord]
 
     @State private var attackingType: EventType? = nil
     @State private var enemyFlashing = false
-    @State private var showHistory   = false
-    @State private var showSettings  = false
-    @State private var prevEnemyHP: Int = 0
+    @State private var showHistory = false
+    @State private var showSettings = false
+    @State private var showFormulaSheet = false
+    @State private var formulaAmount: Int = 5
+    @State private var showPumpedMilkSheet = false
+    @State private var pumpedMilkAmount: Int = 5
+
+    private var todayCounts: DailyCounts {
+        DailyStats.counts(
+            from: records.compactMap { $0.toEventRecord() },
+            for: .now
+        )
+    }
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Color.rpgBackground.ignoresSafeArea()
 
-            VStack(spacing: 8) {
+            VStack(spacing: 0) {
                 topBar
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+
+                crtLine
+
                 Spacer(minLength: 0)
-                EnemyView(enemy: vm.battleState.enemy, level: profileVM.enemyLevel, isFlashing: enemyFlashing)
+
+                EnemyView(
+                    enemy: vm.battleState.enemy,
+                    level: profileVM.enemyLevel,
+                    isFlashing: enemyFlashing
+                )
+                .padding(.horizontal, 16)
+
                 Spacer(minLength: 0)
+
+                MiracleClockView(events: records)
+
+                Spacer(minLength: 0)
+
                 BattleLogView(lines: vm.battleState.battleLog)
-                PartyView(todayCounts: vm.todayCounts(from: records), attackingType: attackingType)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 10)
+
+                crtLine
+
                 eventGrid
-                    .padding(.bottom, 8)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
             }
-            .padding(.horizontal, 12)
-            .padding(.top, 8)
         }
-        .sheet(isPresented: $showHistory)  { HistoryView() }
+        .sheet(isPresented: $showHistory) { HistoryView() }
         .sheet(isPresented: $showSettings) {
             SettingsView()
+                .environment(vm)
                 .environment(profileVM)
                 .environment(authSvc)
+                .environment(themeManager)
         }
-        .onAppear { prevEnemyHP = vm.battleState.enemy.currentHP }
+        .sheet(isPresented: $showFormulaSheet) {
+            MilkAmountSheet(title: "> ミルク量を選択", amount: $formulaAmount) {
+                fireEvent(.formula, amount: formulaAmount)
+            }
+            .presentationDetents([.height(340)])
+            .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showPumpedMilkSheet) {
+            MilkAmountSheet(title: "> 搾乳量を選択", amount: $pumpedMilkAmount) {
+                fireEvent(.pumpedMilk, amount: pumpedMilkAmount)
+            }
+            .presentationDetents([.height(340)])
+            .presentationDragIndicator(.visible)
+        }
         .onChange(of: vm.battleState.enemy.currentHP) { old, new in
             if new < old { triggerEnemyFlash() }
-            prevEnemyHP = new
         }
+        .sensoryFeedback(.success, trigger: vm.battleState.killStreak)
     }
 
-    // MARK: - Subviews
+    // MARK: - Top bar
 
     private var topBar: some View {
-        HStack {
-            Text("連続討伐: \(vm.battleState.killStreak)")
-                .font(.system(.caption, design: .monospaced))
-                .foregroundColor(.crtAmber)
+        HStack(spacing: 0) {
+            Text("討伐 \(vm.battleState.killStreak)")
+                .font(.system(size: 11, design: .monospaced))
+                .foregroundColor(.rpgGoldDim)
 
             Spacer()
 
-            Text("PARTY HP \(vm.battleState.partyHP)/\(BattleState.initialPartyHP)")
-                .font(.system(.caption, design: .monospaced))
-                .foregroundColor(partyHPColor)
+            partyHPBadge
 
             Spacer()
 
-            HStack(spacing: 16) {
-                Button { showHistory = true } label: {
+            HStack(spacing: 14) {
+                Button {
+                    showHistory = true
+                } label: {
                     Text("[LOG]")
-                        .font(.system(.caption, design: .monospaced))
-                        .foregroundColor(.crtDimAmber)
+                        .font(.system(size: 11, design: .monospaced))
+                        .foregroundColor(.rpgGoldDim)
                 }
-                Button { showSettings = true } label: {
+                Button {
+                    showSettings = true
+                } label: {
                     Text("[SET]")
-                        .font(.system(.caption, design: .monospaced))
-                        .foregroundColor(.crtDimAmber)
+                        .font(.system(size: 11, design: .monospaced))
+                        .foregroundColor(.rpgGoldDim)
                 }
             }
         }
     }
 
-    private var partyHPColor: Color {
-        let fraction = Double(vm.battleState.partyHP) / Double(BattleState.initialPartyHP)
-        switch fraction {
-        case 0.5...: return .crtAmber
-        case 0.25...: return .yellow
-        default: return .crtRed
+    private var partyHPBadge: some View {
+        let hp = vm.battleState.partyHP
+        let fraction = Double(hp) / Double(BattleState.initialPartyHP)
+        let hpColor: Color =
+            fraction > 0.5 ? .rpgGold : fraction > 0.25 ? .yellow : .rpgDanger
+        return HStack(spacing: 4) {
+            Text("PARTY HP")
+                .font(.system(size: 10, design: .monospaced))
+                .foregroundColor(.rpgGoldDim)
+            Text("\(hp)")
+                .font(.system(size: 12, design: .monospaced).bold())
+                .foregroundColor(hpColor)
+                .contentTransition(.numericText())
+                .animation(.easeOut(duration: 0.2), value: hp)
         }
     }
+
+    // MARK: - Event grid
 
     private var eventGrid: some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 6) {
-            ForEach(EventType.allCases, id: \.self) { eventType in
-                EventButton(eventType: eventType) {
-                    fireEvent(eventType)
-                }
+        VStack(spacing: 8) {
+            // Primary 4 events — 2×2
+            LazyVGrid(
+                columns: [GridItem(.flexible()), GridItem(.flexible())],
+                spacing: 8
+            ) {
+                EventButton(
+                    eventType: .poop,
+                    count: todayCounts[.poop],
+                    isAttacking: attackingType == .poop
+                ) { fireEvent(.poop) }
+
+                EventButton(
+                    eventType: .pee,
+                    count: todayCounts[.pee],
+                    isAttacking: attackingType == .pee
+                ) { fireEvent(.pee) }
+
+                EventButton(
+                    eventType: .breastfeed,
+                    count: todayCounts[.breastfeed],
+                    isAttacking: attackingType == .breastfeed
+                ) { fireEvent(.breastfeed) }
+
+                MilkEventButton(
+                    eventType: .formula,
+                    count: todayCounts[.formula],
+                    amount: formulaAmount,
+                    isAttacking: attackingType == .formula
+                ) { showFormulaSheet = true }
             }
+
+            // Supplemental — full-width pumped-milk button
+            MilkEventButton(
+                eventType: .pumpedMilk,
+                count: todayCounts[.pumpedMilk],
+                amount: pumpedMilkAmount,
+                isAttacking: attackingType == .pumpedMilk,
+                compact: true
+            ) { showPumpedMilkSheet = true }
         }
     }
 
-    // MARK: - Actions
+    // MARK: - Helpers
 
-    private func fireEvent(_ eventType: EventType) {
+    private var crtLine: some View {
+        Rectangle()
+            .fill(Color.rpgBorder.opacity(0.4))
+            .frame(height: 1)
+    }
+
+    private func fireEvent(_ eventType: EventType, amount: Int = 0) {
+        bvlog.debug(
+            "▶ tap type=\(eventType.rawValue, privacy: .public) amount=\(amount) familyId=\(profileVM.familyId.isEmpty ? "<empty>" : String(profileVM.familyId.prefix(8)), privacy: .public)… userId=\(profileVM.userId.isEmpty ? "<empty>" : String(profileVM.userId.prefix(8)), privacy: .public)…"
+        )
         attackingType = eventType
-        vm.logEvent(eventType, allRecords: records, familyId: profileVM.familyId, userId: profileVM.userId)
+        vm.logEvent(
+            eventType,
+            amount: amount,
+            familyId: profileVM.familyId,
+            userId: profileVM.userId
+        )
         Task {
             try? await Task.sleep(for: .milliseconds(400))
             attackingType = nil
@@ -129,9 +229,13 @@ struct BattleView: View {
 
 private struct EventButton: View {
     let eventType: EventType
+    let count: Int
+    let isAttacking: Bool
     let action: () -> Void
 
     @State private var isPressed = false
+
+    private var isActive: Bool { isPressed || isAttacking }
 
     var body: some View {
         Button {
@@ -142,23 +246,145 @@ private struct EventButton: View {
                 isPressed = false
             }
         } label: {
-            VStack(spacing: 3) {
+            VStack(spacing: 5) {
+                Image(systemName: eventType.icon)
+                    .font(.system(size: 28))
                 Text(eventType.displayName)
-                    .font(.system(.subheadline, design: .monospaced).bold())
-                Text(eventType.partyMember.name)
-                    .font(.system(.caption2, design: .monospaced))
-                    .opacity(0.7)
-                Text(eventType.partyMember.role)
-                    .font(.system(size: 9, design: .monospaced))
-                    .opacity(0.5)
+                    .font(.system(.callout, design: .monospaced).bold())
+                Text("\(count)回")
+                    .font(.system(size: 11, design: .monospaced))
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 10)
-            .foregroundColor(isPressed ? .black : .crtAmber)
-            .background(isPressed ? Color.crtAmber : Color.black)
-            .overlay(Rectangle().stroke(Color.crtAmber, lineWidth: 1))
-            .animation(.easeOut(duration: 0.1), value: isPressed)
+            .frame(maxWidth: .infinity, minHeight: 104)
+            .foregroundColor(isActive ? .black : .rpgGold)
+            .background(isActive ? Color.rpgGold : Color.rpgSurface)
+            .overlay(
+                Rectangle().stroke(
+                    isActive ? Color.rpgGold : Color.rpgBorder.opacity(0.6),
+                    lineWidth: 1
+                )
+            )
+            .animation(.easeOut(duration: 0.1), value: isActive)
         }
         .buttonStyle(.plain)
+        .sensoryFeedback(.impact(weight: .medium), trigger: isPressed) {
+            _,
+            new in new
+        }
+    }
+}
+
+// MARK: - MilkEventButton (formula & pumpedMilk — both track ml)
+
+private struct MilkEventButton: View {
+    let eventType: EventType
+    let count: Int
+    let amount: Int
+    let isAttacking: Bool
+    var compact: Bool = false
+    let onTap: () -> Void
+
+    @State private var isPressed = false
+    private var isActive: Bool { isPressed || isAttacking }
+
+    var body: some View {
+        Button {
+            isPressed = true
+            onTap()
+            Task {
+                try? await Task.sleep(for: .milliseconds(150))
+                isPressed = false
+            }
+        } label: {
+            HStack(spacing: compact ? 12 : 0) {
+                if compact {
+                    Image(systemName: eventType.icon)
+                        .font(.system(size: 20))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(eventType.displayName)
+                            .font(.system(.callout, design: .monospaced).bold())
+                        Text("\(count)回  \(amount) ml")
+                            .font(.system(size: 10, design: .monospaced))
+                            .opacity(0.75)
+                    }
+                } else {
+                    VStack(spacing: 5) {
+                        Image(systemName: eventType.icon)
+                            .font(.system(size: 28))
+                        Text(eventType.displayName)
+                            .font(.system(.callout, design: .monospaced).bold())
+                        Text("\(count)回")
+                            .font(.system(size: 11, design: .monospaced))
+                        Text("\(amount) ml")
+                            .font(.system(size: 10, design: .monospaced))
+                            .opacity(0.65)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, minHeight: compact ? 52 : 104)
+            .foregroundColor(isActive ? .black : .rpgGold)
+            .background(isActive ? Color.rpgGold : Color.rpgSurface)
+            .overlay(
+                Rectangle().stroke(
+                    isActive ? Color.rpgGold : Color.rpgBorder.opacity(0.6),
+                    lineWidth: 1
+                )
+            )
+            .animation(.easeOut(duration: 0.1), value: isActive)
+        }
+        .buttonStyle(.plain)
+        .sensoryFeedback(.impact(weight: .medium), trigger: isPressed) {
+            _,
+            new in new
+        }
+    }
+}
+
+// MARK: - MilkAmountSheet (shared by formula & pumpedMilk)
+
+private struct MilkAmountSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let title: String
+    @Binding var amount: Int
+    let onConfirm: () -> Void
+
+    static let amounts: [Int] =
+        [5] + Array(stride(from: 10, through: 220, by: 10))
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Text(title)
+                .font(.system(.headline, design: .monospaced))
+                .foregroundColor(.rpgGold)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 24)
+                .padding(.top, 24)
+
+            Picker("量", selection: $amount) {
+                ForEach(Self.amounts, id: \.self) { ml in
+                    Text("\(ml) ml")
+                        .font(.system(.body, design: .monospaced))
+                        .tag(ml)
+                }
+            }
+            .pickerStyle(.wheel)
+            .frame(height: 150)
+            .tint(.rpgGold)
+
+            Button {
+                onConfirm()
+                dismiss()
+            } label: {
+                Text("[ 記録する ]")
+                    .font(.system(.headline, design: .monospaced))
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity)
+                    .padding(14)
+                    .background(Color.rpgGold)
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 16)
+        }
+        .background(Color.rpgBackground.ignoresSafeArea())
     }
 }

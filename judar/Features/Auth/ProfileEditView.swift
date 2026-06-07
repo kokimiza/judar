@@ -4,13 +4,16 @@ struct ProfileEditView: View {
     @Environment(ProfileViewModel.self) private var profileVM
     let onComplete: () -> Void
 
-    @State private var username  = ""
-    @State private var birthday  = Calendar.current.date(byAdding: .month, value: -3, to: Date()) ?? Date()
+    @State private var username = ""
+    @State private var birthday =
+        Calendar.current.date(byAdding: .month, value: -3, to: Date()) ?? Date()
     @State private var gender: ChildGender = .male
+    @State private var isSaving = false
+    @State private var saveError: String? = nil
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Color.rpgBackground.ignoresSafeArea()
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
@@ -23,18 +26,29 @@ struct ProfileEditView: View {
                             .autocorrectionDisabled()
                             .textInputAutocapitalization(.never)
                             .onChange(of: username) { _, new in
-                                if new.count > 10 { username = String(new.prefix(10)) }
+                                if new.count > 10 {
+                                    username = String(new.prefix(10))
+                                }
                             }
                             .padding(8)
-                            .overlay(Rectangle().stroke(Color.crtAmber.opacity(0.5), lineWidth: 1))
+                            .overlay(
+                                Rectangle().stroke(
+                                    Color.crtAmber.opacity(0.5),
+                                    lineWidth: 1
+                                )
+                            )
                     }
 
                     fieldBlock(label: "お子さんの生年月日") {
-                        DatePicker("", selection: $birthday, in: ...Date(), displayedComponents: .date)
-                            .datePickerStyle(.compact)
-                            .labelsHidden()
-                            .colorScheme(.dark)
-                            .tint(.crtAmber)
+                        DatePicker(
+                            "",
+                            selection: $birthday,
+                            in: ...Date(),
+                            displayedComponents: .date
+                        )
+                        .datePickerStyle(.compact)
+                        .labelsHidden()
+                        .tint(.rpgGold)
                     }
 
                     fieldBlock(label: "性別") {
@@ -74,7 +88,9 @@ struct ProfileEditView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
                         .background(selected ? Color.crtAmber : Color.clear)
-                        .overlay(Rectangle().stroke(Color.crtAmber, lineWidth: 1))
+                        .overlay(
+                            Rectangle().stroke(Color.crtAmber, lineWidth: 1)
+                        )
                 }
                 .buttonStyle(.plain)
             }
@@ -82,30 +98,81 @@ struct ProfileEditView: View {
     }
 
     private var saveButton: some View {
-        Button {
-            profileVM.updateProfile(username: username, birthday: birthday, gender: gender)
-            onComplete()
-        } label: {
-            Text("[ はじめる ]")
-                .font(.system(.headline, design: .monospaced))
-                .foregroundColor(canSave ? .black : .crtDimAmber)
+        VStack(alignment: .leading, spacing: 10) {
+            if let err = saveError {
+                Text("> \(err)")
+                    .font(.system(.caption2, design: .monospaced))
+                    .foregroundColor(.rpgDanger)
+            }
+
+            Button {
+                Task { await save() }
+            } label: {
+                HStack(spacing: 8) {
+                    if isSaving {
+                        ProgressView().tint(.black).scaleEffect(0.8)
+                    }
+                    Text(isSaving ? "[ 登録中... ]" : "[ はじめる ]")
+                        .font(.system(.headline, design: .monospaced))
+                        .foregroundColor(isButtonActive ? .black : .crtDimAmber)
+                }
                 .frame(maxWidth: .infinity)
                 .padding(14)
-                .background(canSave ? Color.crtAmber : Color.clear)
-                .overlay(Rectangle().stroke(canSave ? Color.crtAmber : Color.crtDimAmber, lineWidth: 1))
+                .background(isButtonActive ? Color.crtAmber : Color.clear)
+                .overlay(
+                    Rectangle().stroke(
+                        isButtonActive ? Color.crtAmber : Color.crtDimAmber,
+                        lineWidth: 1
+                    )
+                )
+            }
+            .buttonStyle(.plain)
+            .disabled(!isButtonActive)
+            .padding(.top, 8)
         }
-        .buttonStyle(.plain)
-        .disabled(!canSave)
-        .padding(.top, 8)
     }
+
+    private var isButtonActive: Bool { canSave && !isSaving }
 
     private var canSave: Bool {
         !username.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
+    private func save() async {
+        isSaving = true
+        saveError = nil
+        defer { isSaving = false }
+
+        if profileVM.profile == nil {
+            // New user — create profile and confirm CloudKit write before proceeding.
+            do {
+                try await profileVM.createAndPushProfile(
+                    username: username,
+                    birthday: birthday,
+                    gender: gender
+                )
+            } catch {
+                saveError = "iCloud への登録に失敗しました。再試行してください。"
+                return
+            }
+        } else {
+            // Existing user editing profile — local update only.
+            profileVM.updateProfile(
+                username: username,
+                birthday: birthday,
+                gender: gender
+            )
+        }
+
+        onComplete()
+    }
+
     // MARK: - Helper
 
-    private func fieldBlock<Content: View>(label: String, @ViewBuilder content: () -> Content) -> some View {
+    private func fieldBlock<Content: View>(
+        label: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
                 .font(.system(.caption, design: .monospaced))

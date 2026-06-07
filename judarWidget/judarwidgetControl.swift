@@ -38,12 +38,20 @@ extension judarwidgetControl {
 
     struct Provider: AppIntentControlValueProvider {
         func previewValue(configuration: TimerConfiguration) -> Value {
-            judarwidgetControl.Value(isRunning: false, name: configuration.timerName)
+            judarwidgetControl.Value(
+                isRunning: false,
+                name: configuration.timerName
+            )
         }
 
-        func currentValue(configuration: TimerConfiguration) async throws -> Value {
-            let isRunning = true // Check if the timer is running
-            return judarwidgetControl.Value(isRunning: isRunning, name: configuration.timerName)
+        func currentValue(configuration: TimerConfiguration) async throws
+            -> Value
+        {
+            let isRunning = true  // Check if the timer is running
+            return judarwidgetControl.Value(
+                isRunning: isRunning,
+                name: configuration.timerName
+            )
         }
     }
 }

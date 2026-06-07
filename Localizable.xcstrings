@@ -8,18 +8,92 @@
 
     },
     "[ ゲストとして続ける ]" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[ CONTINUE AS GUEST ]"
+          }
+        }
+      }
     },
     "[ はじめる ]" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "START"
+          }
+        }
+      }
     },
     "[ ファミリーに合流する ]" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[ JOIN FAMILY ]"
+          }
+        }
+      }
+    },
+    "[ 保存する ]" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[ SAVE ]"
+          }
+        }
+      }
+    },
+    "[ 再接続 ]" : {
 
     },
+    "[ 再試行 ]" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[ RETRY ]"
+          }
+        }
+      }
+    },
     "[ 合流する ]" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[ JOIN ]"
+          }
+        }
+      }
+    },
+    "[ 登録中... ]" : {
 
     },
     "[ 確認中... ]" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[ CHECKING... ]"
+          }
+        }
+      }
+    },
+    "[ 記録する ]" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[ RECORD ]"
+          }
+        }
+      }
+    },
+    "[%@]" : {
 
     },
     "[LOG]" : {
@@ -29,44 +103,218 @@
 
     },
     "[キャンセル]" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[CANCEL]"
+          }
+        }
+      }
     },
     "[コピー]" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[COPY]"
+          }
+        }
+      }
+    },
+    "[編集]" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[EDIT]"
+          }
+        }
+      }
     },
     "[耐性なし]" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[NO RESIST]"
+          }
+        }
+      }
     },
     "[閉じる]" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[CLOSE]"
+          }
+        }
+      }
     },
     "%lld" : {
 
     },
-    "%lld回" : {
-
-    },
-    "> Apple ID でログイン" : {
-
-    },
-    "> プロフィール設定" : {
-
-    },
-    "> 記録がありません" : {
-
-    },
-    "Apple ID でサインインすると\nデータのバックアップと家族共有が使えます" : {
-
-    },
-    "HP [%@] %lld/%lld" : {
+    "%lld / %lld" : {
       "localizations" : {
         "ja" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "HP [%1$@] %2$lld/%3$lld"
+            "value" : "%1$lld / %2$lld"
           }
         }
       }
+    },
+    "%lld ml" : {
+
+    },
+    "%lld 件" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld items"
+          }
+        }
+      }
+    },
+    "%lld回" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld×"
+          }
+        }
+      }
+    },
+    "%lld回  %lld ml" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld回  %2$lld ml"
+          }
+        }
+      }
+    },
+    "%lld日" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld d"
+          }
+        }
+      }
+    },
+    "> %@" : {
+
+    },
+    "> %lld 件の記録" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "> %lld records"
+          }
+        }
+      }
+    },
+    "> Apple ID でログイン" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "> Sign in with Apple ID"
+          }
+        }
+      }
+    },
+    "> iCloud が有効になると同期できます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "> Sync available once iCloud is enabled"
+          }
+        }
+      }
+    },
+    "> プロフィール設定" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "> Profile Settings"
+          }
+        }
+      }
+    },
+    "> ミルク量を選択" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "> Select Formula Amount"
+          }
+        }
+      }
+    },
+    "> 記録がありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "> No records"
+          }
+        }
+      }
+    },
+    "> 記録を編集" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "> Edit Record"
+          }
+        }
+      }
+    },
+    "> 読み込み中..." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "> Loading..."
+          }
+        }
+      }
+    },
+    "> 起動中..." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "> Starting..."
+          }
+        }
+      }
+    },
+    "Apple ID でサインインすると\nデータのバックアップと家族共有が使えます" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign in with Apple ID\nto enable backup and family sharing"
+          }
+        }
+      }
+    },
+    "iCloud に接続できません" : {
+
     },
     "judar" : {
 
@@ -77,56 +325,263 @@
     "OK" : {
 
     },
-    "PARTY HP %lld/%lld" : {
+    "PARTY HP" : {
+
+    },
+    "あとから設定画面で変更できます" : {
       "localizations" : {
-        "ja" : {
+        "en" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "PARTY HP %1$lld/%2$lld"
+            "state" : "translated",
+            "value" : "You can change this later in Settings"
           }
         }
       }
     },
-    "あとから設定画面で変更できます" : {
-
+    "キャンセル" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        }
+      }
     },
     "ゲストモードではデータ共有・バックアップは利用できません" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data sharing and backup are unavailable in guest mode"
+          }
+        }
+      }
+    },
+    "この記録を削除しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this record?"
+          }
+        }
+      }
+    },
+    "なし" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None"
+          }
+        }
+      }
     },
     "ファミリー共有" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Family Sharing"
+          }
+        }
+      }
     },
     "ファミリー合流" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join Family"
+          }
+        }
+      }
+    },
+    "プロフィール確認にはネットワーク接続が必要です" : {
 
+    },
+    "ミルク量" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formula Amount"
+          }
+        }
+      }
+    },
+    "全件アップロード" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upload All"
+          }
+        }
+      }
+    },
+    "再試行中..." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retrying..."
+          }
+        }
+      }
+    },
+    "削除した記録は元に戻せません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleted records cannot be restored"
+          }
+        }
+      }
+    },
+    "削除する" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        }
+      }
     },
     "合流成功！" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Joined!"
+          }
+        }
+      }
     },
     "同じファミリーとして記録が共有されます。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Records will be shared as the same family."
+          }
+        }
+      }
+    },
+    "同期中..." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Syncing..."
+          }
+        }
+      }
+    },
+    "外観" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appearance"
+          }
+        }
+      }
+    },
+    "弱:%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weak:%@"
+          }
+        }
+      }
+    },
+    "未同期レコード" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unsynced Records"
+          }
+        }
+      }
     },
     "相手のユーザーIDと\n共有コードを入力" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the other user's ID\nand shared code"
+          }
+        }
+      }
     },
-    "耐性: %@" : {
-
+    "耐:%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Res:%@"
+          }
+        }
+      }
     },
-    "計%lld回" : {
-
+    "討伐 %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Defeat %lld"
+          }
+        }
+      }
     },
     "記録ログ" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record Log"
+          }
+        }
+      }
     },
     "設定" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        }
+      }
     },
     "読込中..." : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Loading..."
+          }
+        }
+      }
     },
     "赤ちゃん育児記録 RPG" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baby Care RPG"
+          }
+        }
+      }
     },
-    "連続討伐: %lld" : {
+    "量" : {
 
     }
   },

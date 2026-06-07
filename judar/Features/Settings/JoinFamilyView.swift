@@ -4,7 +4,7 @@ struct JoinFamilyView: View {
     @Environment(ProfileViewModel.self) private var profileVM
     @Environment(\.dismiss) private var dismiss
 
-    @State private var ownerUserId   = ""
+    @State private var ownerUserId = ""
     @State private var ownerShareCode = ""
     @State private var localError: Error?
     @State private var success = false
@@ -12,7 +12,7 @@ struct JoinFamilyView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.black.ignoresSafeArea()
+                Color.rpgBackground.ignoresSafeArea()
                 VStack(alignment: .leading, spacing: 20) {
                     Text("相手のユーザーIDと\n共有コードを入力")
                         .font(.system(.body, design: .monospaced))
@@ -44,7 +44,9 @@ struct JoinFamilyView: View {
                         .foregroundColor(.black)
                         .frame(maxWidth: .infinity)
                         .padding(12)
-                        .background(canJoin ? Color.crtAmber : Color.crtDimAmber)
+                        .background(
+                            canJoin ? Color.crtAmber : Color.crtDimAmber
+                        )
                     }
                     .buttonStyle(.plain)
                     .disabled(!canJoin)
@@ -55,7 +57,7 @@ struct JoinFamilyView: View {
             }
             .navigationTitle("ファミリー合流")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
+            
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("[キャンセル]") { dismiss() }
@@ -74,9 +76,9 @@ struct JoinFamilyView: View {
     // MARK: - Helpers
 
     private var canJoin: Bool {
-        !ownerUserId.trimmingCharacters(in: .whitespaces).isEmpty &&
-        ownerShareCode.trimmingCharacters(in: .whitespaces).count == 6 &&
-        !profileVM.isJoiningFamily
+        !ownerUserId.trimmingCharacters(in: .whitespaces).isEmpty
+            && ownerShareCode.trimmingCharacters(in: .whitespaces).count == 6
+            && !profileVM.isJoiningFamily
     }
 
     private func join() async {
@@ -102,7 +104,12 @@ struct JoinFamilyView: View {
                 .foregroundColor(.crtAmber)
                 .autocorrectionDisabled()
                 .padding(8)
-                .overlay(Rectangle().stroke(Color.crtAmber.opacity(0.5), lineWidth: 1))
+                .overlay(
+                    Rectangle().stroke(
+                        Color.crtAmber.opacity(0.5),
+                        lineWidth: 1
+                    )
+                )
         }
     }
 }

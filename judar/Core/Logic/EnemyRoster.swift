@@ -74,7 +74,10 @@ enum EnemyRoster {
     }
 
     // Hardcoded-fallback version (uses EnemyRoster.all)
-    static func randomTemplate(excluding name: String? = nil, randomSource: RandomSource) -> EnemyTemplate {
+    static func randomTemplate(
+        excluding name: String? = nil,
+        randomSource: RandomSource
+    ) -> EnemyTemplate {
         randomTemplate(from: all, excluding: name, randomSource: randomSource)
     }
 
@@ -85,7 +88,8 @@ enum EnemyRoster {
         randomSource: RandomSource
     ) -> EnemyTemplate {
         let source = pool.isEmpty ? all : pool
-        let candidates = name.map { n in source.filter { $0.name != n } } ?? source
+        let candidates =
+            name.map { n in source.filter { $0.name != n } } ?? source
         let finalPool = candidates.isEmpty ? source : candidates
         return finalPool[randomSource.nextInt(max(1, finalPool.count))]
     }

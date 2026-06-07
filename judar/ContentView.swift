@@ -1,85 +1,114 @@
-import SwiftUI
 import SwiftData
-
-private enum AppPhase {
-    case checking
-    case signIn
-    case profileSetup
-    case home
-}
+import SwiftUI
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-
-    @State private var appPhase  = AppPhase.checking
-    @State private var authSvc   = AuthService()
-    @State private var cloudKit  = CloudKitSyncService()
-    @State private var battleVM: BattleViewModel?
-    @State private var profileVM: ProfileViewModel?
+    @State private var coordinator = LaunchCoordinator()
 
     var body: some View {
         Group {
-            switch appPhase {
+            switch coordinator.phase {
             case .checking:
-                Color.black.ignoresSafeArea()
-                    .task { await checkAuth() }
+                launchingView
 
             case .signIn:
                 SignInView()
-                    .environment(authSvc)
+                    .environment(coordinator.authSvc)
 
             case .profileSetup:
-                if let pvm = profileVM {
-                    ProfileEditView { appPhase = .home }
+                if let pvm = coordinator.profileVM {
+                    ProfileEditView { coordinator.advanceToHome() }
                         .environment(pvm)
                 }
 
             case .home:
-                if let bvm = battleVM, let pvm = profileVM {
+                if let bvm = coordinator.battleVM,
+                    let pvm = coordinator.profileVM
+                {
                     BattleView()
                         .environment(bvm)
                         .environment(pvm)
-                        .environment(authSvc)
+                        .environment(coordinator.authSvc)
                 }
             }
         }
-        // Boot services when Apple sign-in OR guest mode is chosen
-        .onChange(of: authSvc.canProceed) { _, can in
-            guard can else { return }
-            Task { await bootServices() }
+        .task { await coordinator.start(modelContext: modelContext) }
+        .onChange(of: coordinator.canProceed) { _, can in
+            guard can, coordinator.phase == .signIn else { return }
+            Task { await coordinator.bootServices(modelContext: modelContext) }
+        }
+        .preferredColorScheme(coordinator.themeManager.current.colorScheme)
+        .environment(coordinator.themeManager)
+    }
+
+    // MARK: - Launch screen (UI only — logic lives in LaunchCoordinator)
+
+    private var launchingView: some View {
+        ZStack {
+            Color.rpgBackground.ignoresSafeArea()
+            VStack(spacing: 0) {
+                Spacer()
+                VStack(spacing: 8) {
+                    Text("judar")
+                        .font(.system(size: 48, design: .monospaced).bold())
+                        .foregroundColor(.rpgGold)
+                    Text("赤ちゃん育児記録 RPG")
+                        .font(.system(.caption, design: .monospaced))
+                        .foregroundColor(.rpgGoldDim)
+                }
+                Spacer()
+                if coordinator.cloudKitVerifyFailed {
+                    cloudKitErrorPanel
+                } else {
+                    VStack(spacing: 10) {
+                        ProgressView().tint(.rpgGold)
+                        Text(coordinator.launchMessage)
+                            .font(.system(.caption2, design: .monospaced))
+                            .foregroundColor(.rpgGoldDim)
+                            .animation(
+                                .easeOut,
+                                value: coordinator.launchMessage
+                            )
+                    }
+                }
+                Spacer().frame(height: 48)
+            }
         }
     }
 
-    // MARK: - Auth check on launch
-
-    private func checkAuth() async {
-        // Guest mode persists across launches
-        if authSvc.isGuest {
-            await bootServices()
-            return
+    private var cloudKitErrorPanel: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "icloud.slash")
+                .font(.system(size: 32))
+                .foregroundColor(.rpgGoldDim)
+            Text("iCloud に接続できません")
+                .font(.system(.caption, design: .monospaced).bold())
+                .foregroundColor(.rpgGoldDim)
+            Text("プロフィール確認にはネットワーク接続が必要です")
+                .font(.system(size: 9, design: .monospaced))
+                .foregroundColor(.rpgGoldDim.opacity(0.6))
+                .multilineTextAlignment(.center)
+            Button {
+                Task {
+                    await coordinator.retryCloudKitVerification(
+                        modelContext: modelContext
+                    )
+                }
+            } label: {
+                Text("[ 再接続 ]")
+                    .font(.system(.caption, design: .monospaced).bold())
+                    .foregroundColor(.rpgGold)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 10)
+                    .overlay(
+                        Rectangle().stroke(
+                            Color.rpgBorder.opacity(0.6),
+                            lineWidth: 1
+                        )
+                    )
+            }
+            .buttonStyle(.plain)
         }
-        let valid = await authSvc.checkStoredAuth()
-        if valid {
-            await bootServices()
-        } else {
-            appPhase = .signIn
-        }
-    }
-
-    // MARK: - Service initialization (runs after successful auth)
-
-    private func bootServices() async {
-        let pvm = ProfileViewModel(modelContext: modelContext, cloudKit: cloudKit)
-        let bvm = BattleViewModel(modelContext: modelContext, cloudKit: cloudKit)
-        profileVM = pvm
-        battleVM  = bvm
-
-        await pvm.loadOrCreate()
-
-        if cloudKit.isAvailable {
-            try? await cloudKit.seedEnemiesIfNeeded()
-        }
-
-        appPhase = pvm.isProfileComplete ? .home : .profileSetup
+        .padding(.horizontal, 40)
     }
 }

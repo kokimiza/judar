@@ -1,5 +1,7 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
+
+// MARK: - HistoryView
 
 struct HistoryView: View {
     @Environment(\.modelContext) private var modelContext
@@ -7,251 +9,238 @@ struct HistoryView: View {
     @Query(sort: \BabyEventRecord.timestamp, order: .reverse)
     private var records: [BabyEventRecord]
 
-    @State private var vm = HistoryViewModel()
-    @State private var editingRecord: BabyEventRecord?
+    @State private var dayRange: Int = 3
+    @State private var selectedCell: GridCell?
+
+    // Async index state
+    @Environment(BattleViewModel.self) private var battleVM
+    @Environment(ProfileViewModel.self) private var profileVM
+
+    @State private var countIdx: [String: Int] = [:]
+    @State private var unsyncIdx: Set<String> = []
+    @State private var isReady: Bool = false
+    @State private var isReindexing: Bool = false
+    @State private var indexingTask: Task<Void, Never>?
+
+    private var days: [Date] {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: .now)
+        return (0..<dayRange)
+            .map { cal.date(byAdding: .day, value: -$0, to: today)! }
+            .reversed()
+    }
+
+    // MARK: - Body
 
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.black.ignoresSafeArea()
-                if vm.groupedDays.isEmpty {
-                    Text("> 記録がありません")
-                        .font(.system(.caption, design: .monospaced))
-                        .foregroundColor(.crtDimAmber)
+                Color.rpgBackground.ignoresSafeArea()
+                if isReady {
+                    mainContent
+                        .transition(.opacity)
                 } else {
-                    list
+                    loadingView
+                        .transition(.opacity)
                 }
             }
+            .animation(.easeOut(duration: 0.2), value: isReady)
             .navigationTitle("記録ログ")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("[閉じる]") { dismiss() }
                         .font(.system(.caption, design: .monospaced))
-                        .foregroundColor(.crtAmber)
+                        .foregroundColor(.rpgGold)
                 }
             }
         }
-        .sheet(item: $editingRecord) { record in
-            EventEditSheet(record: record)
+        .sheet(item: $selectedCell) { cell in
+            CellDetailSheet(
+                records: events(for: cell),
+                cell: cell,
+                onDelete: { modelContext.delete($0) },
+                onRetry: { record in
+                    await battleVM.retrySync(
+                        record: record,
+                        familyId: profileVM.familyId,
+                        userId: profileVM.userId
+                    )
+                }
+            )
         }
-        .onAppear { vm.load(records: records) }
-        .onChange(of: records.count) { _, _ in vm.load(records: records) }
+        .task { scheduleReindex(initial: true) }
+        .onChange(of: dayRange) { _, _ in scheduleReindex() }
+        .onChange(of: records.count) { _, _ in scheduleReindex() }
     }
 
-    // MARK: - List
+    // MARK: - Main content
 
-    private var list: some View {
-        List {
-            ForEach(vm.groupedDays, id: \.day) { group in
-                Section {
-                    DailySummaryRow(counts: group.counts)
-                    ForEach(group.records, id: \.id) { record in
-                        EventRow(record: record) {
-                            editingRecord = record
-                        }
-                        // 右スワイプで削除
-                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                            Button(role: .destructive) {
-                                modelContext.delete(record)
-                                vm.load(records: records)
-                            } label: {
-                                Label("削除", systemImage: "trash")
-                            }
-                        }
-                    }
-                } header: {
-                    HStack {
-                        Text(vm.dayLabel(for: group.day))
-                            .font(.system(.caption, design: .monospaced))
-                            .foregroundColor(.crtAmber)
-                        Spacer()
-                        Text("計\(group.counts.total)回")
-                            .font(.system(.caption2, design: .monospaced))
-                            .foregroundColor(.crtDimAmber)
-                    }
-                }
+    private var mainContent: some View {
+        VStack(spacing: 0) {
+            rangeSelector
+            crtLine
+            HistoryTimeGrid(
+                days: days,
+                countIdx: countIdx,
+                unsyncIdx: unsyncIdx
+            ) { cell in
+                selectedCell = cell
             }
         }
-        .listStyle(.plain)
-        .scrollContentBackground(.hidden)
     }
-}
 
-// MARK: - Daily summary row
+    // MARK: - Loading views
 
-private struct DailySummaryRow: View {
-    let counts: DailyCounts
+    private var loadingView: some View {
+        VStack(spacing: 14) {
+            ProgressView().tint(.crtAmber)
+            Text("> 読み込み中...")
+                .font(.system(.callout, design: .monospaced))
+                .foregroundColor(.crtAmber)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
 
-    var body: some View {
+    // MARK: - Range selector
+
+    private var rangeSelector: some View {
         HStack(spacing: 0) {
-            ForEach(EventType.allCases, id: \.self) { et in
-                summaryCell(et)
-                if et != EventType.allCases.last {
-                    Divider()
-                        .frame(height: 40)
-                        .overlay(Color.crtAmber.opacity(0.15))
-                }
-            }
-        }
-        .padding(.vertical, 6)
-        .background(Color.white.opacity(0.03))
-        .overlay(Rectangle().strokeBorder(Color.crtAmber.opacity(0.2), lineWidth: 1))
-        .listRowInsets(EdgeInsets())
-        .listRowBackground(Color.black)
-    }
-
-    private func summaryCell(_ et: EventType) -> some View {
-        let count = counts[et]
-        return VStack(spacing: 3) {
-            Text(et.icon).font(.title3)
-            Text("\(count)")
-                .font(.system(.headline, design: .monospaced).bold())
-                .foregroundColor(count > 0 ? .crtAmber : .crtDimAmber)
-            Text(et.displayName)
-                .font(.system(size: 9, design: .monospaced))
-                .foregroundColor(.crtDimAmber)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 4)
-    }
-}
-
-// MARK: - Event row (tappable, swipe-deletable)
-
-private struct EventRow: View {
-    let record: BabyEventRecord
-    let onTap: () -> Void
-
-    private static let timeFmt: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "HH:mm"
-        return f
-    }()
-
-    var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: 0) {
-                Text(Self.timeFmt.string(from: record.timestamp))
-                    .font(.system(.caption, design: .monospaced))
-                    .foregroundColor(.crtDimAmber)
-                    .frame(width: 44, alignment: .leading)
-
-                Text(record.eventType?.icon ?? "?")
-                    .font(.body)
-                    .frame(width: 28, alignment: .center)
-
-                Text(record.eventType?.displayName ?? "不明")
-                    .font(.system(.caption, design: .monospaced))
-                    .foregroundColor(.crtAmber)
-
-                Spacer()
-
-                Image(systemName: "pencil")
-                    .font(.system(size: 10))
-                    .foregroundColor(.crtDimAmber)
-            }
-            .padding(.vertical, 4)
-        }
-        .buttonStyle(.plain)
-        .listRowBackground(Color.black)
-    }
-}
-
-// MARK: - Edit sheet
-
-private struct EventEditSheet: View {
-    @Environment(\.dismiss) private var dismiss
-    @Bindable var record: BabyEventRecord
-
-    @State private var editTime: Date
-    @State private var editType: EventType
-
-    init(record: BabyEventRecord) {
-        self.record   = record
-        _editTime     = State(initialValue: record.timestamp)
-        _editType     = State(initialValue: record.eventType ?? .poop)
-    }
-
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                Color.black.ignoresSafeArea()
-
-                VStack(alignment: .leading, spacing: 28) {
-                    // Date + time picker
-                    fieldBlock(label: "日時") {
-                        DatePicker("", selection: $editTime, in: ...Date(), displayedComponents: [.date, .hourAndMinute])
-                            .datePickerStyle(.compact)
-                            .labelsHidden()
-                            .colorScheme(.dark)
-                            .tint(.crtAmber)
-                    }
-
-                    // Event type selector
-                    fieldBlock(label: "種別") {
-                        HStack(spacing: 0) {
-                            ForEach(EventType.allCases, id: \.self) { et in
-                                let selected = (editType == et)
-                                Button {
-                                    editType = et
-                                } label: {
-                                    VStack(spacing: 4) {
-                                        Text(et.icon).font(.title2)
-                                        Text(et.displayName)
-                                            .font(.system(size: 9, design: .monospaced))
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 10)
-                                    .foregroundColor(selected ? .black : .crtAmber)
-                                    .background(selected ? Color.crtAmber : Color.clear)
-                                    .overlay(Rectangle().stroke(Color.crtAmber, lineWidth: 1))
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                    }
-
-                    // Save
+            HStack(spacing: 4) {
+                ForEach([1, 3, 7], id: \.self) { n in
+                    let active = dayRange == n
                     Button {
-                        record.timestamp    = editTime
-                        record.eventTypeRaw = editType.rawValue
-                        record.isSynced     = false  // re-sync on next push
-                        dismiss()
+                        dayRange = n
                     } label: {
-                        Text("[ 保存する ]")
-                            .font(.system(.headline, design: .monospaced))
-                            .foregroundColor(.black)
-                            .frame(maxWidth: .infinity)
-                            .padding(14)
-                            .background(Color.crtAmber)
+                        HStack(spacing: 4) {
+                            Image(
+                                systemName: active
+                                    ? "\(n).circle.fill" : "\(n).circle"
+                            )
+                            .font(.system(size: 13, weight: .semibold))
+                            Text("\(n)日")
+                                .font(
+                                    .system(
+                                        size: 12,
+                                        weight: .semibold,
+                                        design: .monospaced
+                                    )
+                                )
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .foregroundStyle(
+                            active ? Color.rpgBackground : Color.rpgGoldDim
+                        )
+                        .background(
+                            active ? Color.rpgGold : Color.clear,
+                            in: Capsule()
+                        )
                     }
                     .buttonStyle(.plain)
+                    .animation(.easeInOut(duration: 0.15), value: active)
+                }
+            }
+            .padding(3)
+            .background(
+                Color.rpgSurface,
+                in: RoundedRectangle(cornerRadius: 20)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 20).strokeBorder(
+                    Color.rpgBorder.opacity(0.4),
+                    lineWidth: 1
+                )
+            )
+            .padding(.leading, 10)
+            .padding(.vertical, 6)
 
-                    Spacer()
-                }
-                .padding(24)
+            Spacer()
+
+            if isReindexing {
+                ProgressView()
+                    .tint(.crtAmber)
+                    .scaleEffect(0.7)
+                    .padding(.trailing, 10)
+                    .transition(.opacity)
             }
-            .navigationTitle("> 記録を編集")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("[キャンセル]") { dismiss() }
-                        .font(.system(.caption, design: .monospaced))
-                        .foregroundColor(.crtDimAmber)
-                }
-            }
+        }
+        .animation(.easeOut(duration: 0.15), value: isReindexing)
+    }
+
+    // MARK: - Helpers
+
+    private var crtLine: some View {
+        Rectangle().fill(Color.crtAmber.opacity(0.2)).frame(height: 1)
+    }
+
+    private func events(for cell: GridCell) -> [BabyEventRecord] {
+        let cal = Calendar.current
+        return records.filter { r in
+            let day = cal.startOfDay(for: r.timestamp)
+            let h = cal.component(.hour, from: r.timestamp)
+            let m = cal.component(.minute, from: r.timestamp)
+            let slot = h * 2 + (m >= 30 ? 1 : 0)
+            return day == cell.day && slot == cell.slot
         }
     }
 
-    private func fieldBlock<C: View>(label: String, @ViewBuilder content: () -> C) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(label)
-                .font(.system(.caption, design: .monospaced))
-                .foregroundColor(.crtDimAmber)
-            content()
+    // MARK: - Async index
+
+    private func scheduleReindex(initial: Bool = false) {
+        indexingTask?.cancel()
+        if initial {
+            isReady = false
+        } else {
+            isReindexing = true
+        }
+        indexingTask = Task { await reindex(initial: initial) }
+    }
+
+    private func reindex(initial: Bool) async {
+        // Yield immediately so the UI (selector animation etc.) can update
+        // before any work begins.
+        await Task.yield()
+
+        // Capture only raw values on MainActor — no Calendar calls here.
+        struct Raw: Sendable {
+            let timestamp: Date
+            let typeRaw: String
+            let isSynced: Bool
+        }
+        let rawData: [Raw] = records.map {
+            Raw(
+                timestamp: $0.timestamp,
+                typeRaw: $0.eventTypeRaw,
+                isSynced: $0.isSynced
+            )
+        }
+
+        // All Calendar work runs off MainActor.
+        let (newIdx, newUnsync) = await Task.detached(priority: .userInitiated)
+        {
+            let cal = Calendar.current
+            var idx: [String: Int] = [:]
+            var unsync = Set<String>()
+            for r in rawData {
+                let dayStart = cal.startOfDay(for: r.timestamp)
+                    .timeIntervalSince1970
+                let h = cal.component(.hour, from: r.timestamp)
+                let m = cal.component(.minute, from: r.timestamp)
+                let slot = h * 2 + (m >= 30 ? 1 : 0)
+                let key = "\(dayStart)_\(slot)_\(r.typeRaw)"
+                idx[key, default: 0] += 1
+                if !r.isSynced { unsync.insert(key) }
+            }
+            return (idx, unsync)
+        }.value
+
+        guard !Task.isCancelled else { return }
+
+        withAnimation(.easeOut(duration: 0.15)) {
+            countIdx = newIdx
+            unsyncIdx = newUnsync
+            if initial { isReady = true } else { isReindexing = false }
         }
     }
 }

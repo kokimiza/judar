@@ -7,10 +7,12 @@ struct BattleLogView: View {
         ScrollViewReader { proxy in
             ScrollView(.vertical, showsIndicators: false) {
                 LazyVStack(alignment: .leading, spacing: 2) {
-                    ForEach(Array(lines.enumerated()), id: \.offset) { index, line in
+                    ForEach(Array(lines.enumerated()), id: \.offset) {
+                        index,
+                        line in
                         Text(line)
                             .font(.system(.caption, design: .monospaced))
-                            .foregroundColor(.crtAmber)
+                            .foregroundColor(.rpgGold)
                             .id(index)
                     }
                 }
@@ -23,10 +25,11 @@ struct BattleLogView: View {
                 }
             }
         }
-        .frame(height: 88)
+        .frame(height: 70)
+        .background(Color.rpgSurface.opacity(0.5))
         .overlay(
             Rectangle()
-                .stroke(Color.crtAmber.opacity(0.35), lineWidth: 1)
+                .stroke(Color.rpgBorder.opacity(0.35), lineWidth: 1)
         )
     }
 }

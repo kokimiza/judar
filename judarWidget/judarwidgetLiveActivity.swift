@@ -6,8 +6,8 @@
 //
 
 import ActivityKit
-import WidgetKit
 import SwiftUI
+import WidgetKit
 
 struct judarwidgetAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
@@ -65,15 +65,15 @@ extension judarwidgetAttributes {
 extension judarwidgetAttributes.ContentState {
     fileprivate static var smiley: judarwidgetAttributes.ContentState {
         judarwidgetAttributes.ContentState(emoji: "😀")
-     }
-     
-     fileprivate static var starEyes: judarwidgetAttributes.ContentState {
-         judarwidgetAttributes.ContentState(emoji: "🤩")
-     }
+    }
+
+    fileprivate static var starEyes: judarwidgetAttributes.ContentState {
+        judarwidgetAttributes.ContentState(emoji: "🤩")
+    }
 }
 
 #Preview("Notification", as: .content, using: judarwidgetAttributes.preview) {
-   judarwidgetLiveActivity()
+    judarwidgetLiveActivity()
 } contentStates: {
     judarwidgetAttributes.ContentState.smiley
     judarwidgetAttributes.ContentState.starEyes
