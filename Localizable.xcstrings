@@ -18,6 +18,7 @@
       }
     },
     "[ はじめる ]" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -69,9 +70,6 @@
           }
         }
       }
-    },
-    "[ 登録中... ]" : {
-
     },
     "[ 確認中... ]" : {
       "localizations" : {
@@ -242,6 +240,7 @@
       }
     },
     "> プロフィール設定" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -319,9 +318,6 @@
     "judar" : {
 
     },
-    "Lv.%lld" : {
-
-    },
     "OK" : {
 
     },
@@ -329,6 +325,7 @@
 
     },
     "あとから設定画面で変更できます" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
