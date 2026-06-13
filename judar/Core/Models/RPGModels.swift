@@ -10,16 +10,10 @@ struct PartyMember: Sendable {
 
     static let all: [PartyMember] = [
         PartyMember(
-            eventType: .poop,
-            role: "戦士",
-            baseDamage: 15,
-            accuracy: 0.75
-        ),
-        PartyMember(
-            eventType: .pee,
-            role: "魔法使い",
-            baseDamage: 12,
-            accuracy: 0.90
+            eventType: .diaper,
+            role: "武闘家",
+            baseDamage: 14,
+            accuracy: 0.80
         ),
         PartyMember(
             eventType: .breastfeed,

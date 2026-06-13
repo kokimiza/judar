@@ -12,7 +12,6 @@ private let lclog = Logger(
 enum AppPhase {
     case checking
     case signIn
-    case profileSetup
     case home
 }
 
@@ -44,7 +43,6 @@ final class LaunchCoordinator {
 
     // MARK: - Entry points
 
-    /// Called once from ContentView.task — runs auth check and boots services.
     func start(modelContext: ModelContext) async {
         lclog.debug("▶ start isGuest=\(self.authSvc.isGuest)")
         if authSvc.isGuest {
@@ -60,7 +58,6 @@ final class LaunchCoordinator {
         }
     }
 
-    /// Called from ContentView when authSvc.canProceed becomes true (sign-in / guest tap).
     func bootServices(modelContext: ModelContext) async {
         cloudKit.setGuestMode(authSvc.isGuest)
 
@@ -84,7 +81,7 @@ final class LaunchCoordinator {
                 familyId: pvm.familyId,
                 userId: pvm.userId
             )
-            phase = pvm.isProfileComplete ? .home : .profileSetup
+            phase = .home
             return
         }
 
@@ -96,25 +93,10 @@ final class LaunchCoordinator {
         await verifyAndRoute(pvm: pvm, bvm: bvm)
     }
 
-    /// Retry button in the error panel re-runs the full auth + boot sequence.
     func retryCloudKitVerification(modelContext: ModelContext) async {
         cloudKitVerifyFailed = false
         launchMessage = "> 再接続中..."
         await start(modelContext: modelContext)
-    }
-
-    /// Called from ProfileEditView completion callback.
-    func advanceToHome() {
-        phase = .home
-        Task {
-            await seedEnemiesOnce()
-            if let pvm = profileVM, let bvm = battleVM {
-                await bvm.restoreProgress(
-                    familyId: pvm.familyId,
-                    userId: pvm.userId
-                )
-            }
-        }
     }
 
     // MARK: - Private
@@ -132,13 +114,18 @@ final class LaunchCoordinator {
                 familyId: pvm.familyId,
                 userId: pvm.userId
             )
-            phase = pvm.isProfileComplete ? .home : .profileSetup
+            phase = .home
 
         case .notFound:
-            // Admin deleted profile — wipe stale local data, force re-registration
-            lclog.warning("  CK verify: notFound — clearing local profile")
+            lclog.warning("  CK verify: notFound — recreating profile")
             pvm.clearLocalProfile()
-            phase = .profileSetup
+            await pvm.loadOrCreate()
+            await seedEnemiesOnce()
+            await bvm.restoreProgress(
+                familyId: pvm.familyId,
+                userId: pvm.userId
+            )
+            phase = .home
 
         case .unavailable:
             lclog.warning("  CK verify: unavailable — showing retry panel")

@@ -12,16 +12,14 @@ private let wlog = Logger(
 // MARK: - Inline types (widget cannot import the main app module)
 
 enum WEventType: String, CaseIterable {
-    case poop = "poop"
-    case pee = "pee"
+    case diaper = "diaper"
     case breastfeed = "breastfeed"
     case formula = "formula"
     case pumpedMilk = "pumpedMilk"
 
     var displayName: String {
         switch self {
-        case .poop: return "うんち"
-        case .pee: return "しっこ"
+        case .diaper: return "オムツ交換"
         case .breastfeed: return "母乳"
         case .formula: return "ミルク"
         case .pumpedMilk: return "搾母乳"
@@ -30,8 +28,7 @@ enum WEventType: String, CaseIterable {
 
     var icon: String {
         switch self {
-        case .poop: return "💩"
-        case .pee: return "💧"
+        case .diaper: return "🧷"
         case .breastfeed: return "🤱"
         case .formula: return "🍼"
         case .pumpedMilk: return "🫙"
@@ -40,22 +37,19 @@ enum WEventType: String, CaseIterable {
 }
 
 struct WDailyCounts: Codable {
-    var poop: Int = 0
-    var pee: Int = 0
+    var diaper: Int = 0
     var breastfeed: Int = 0
     var formula: Int = 0
     var pumpedMilk: Int = 0
     var lastActionDate: Date? = nil
-    var lastPoopDate: Date? = nil
-    var lastPeeDate: Date? = nil
+    var lastDiaperDate: Date? = nil
     var lastBreastfeedDate: Date? = nil
     var lastFormulaDate: Date? = nil
     var lastPumpedMilkDate: Date? = nil
 
     subscript(et: WEventType) -> Int {
         switch et {
-        case .poop: return poop
-        case .pee: return pee
+        case .diaper: return diaper
         case .breastfeed: return breastfeed
         case .formula: return formula
         case .pumpedMilk: return pumpedMilk
@@ -64,8 +58,7 @@ struct WDailyCounts: Codable {
 
     subscript(lastDate et: WEventType) -> Date? {
         switch et {
-        case .poop: return lastPoopDate
-        case .pee: return lastPeeDate
+        case .diaper: return lastDiaperDate
         case .breastfeed: return lastBreastfeedDate
         case .formula: return lastFormulaDate
         case .pumpedMilk: return lastPumpedMilkDate
@@ -106,10 +99,6 @@ struct WDailyCounts: Codable {
     var appleUserId: String = ""
     var familyId: String = ""
     var shareCode: String = ""
-    var username: String = ""
-    var childBirthday: Date? = nil
-    var childGenderRaw: String = ""
-    var displayName: String = ""
     var cloudKitRecordName: String = ""
     var createdAt: Date = Date()
     init() {}
@@ -144,7 +133,7 @@ private func buildCounts() async -> WDailyCounts {
         let ckResult = await cloudKitCounts(familyId: fid)
         if let counts = ckResult {
             wlog.debug(
-                "  ✅ using CloudKit counts: poop=\(counts.poop) pee=\(counts.pee) breastfeed=\(counts.breastfeed) formula=\(counts.formula) pumpedMilk=\(counts.pumpedMilk)"
+                "  ✅ using CloudKit counts: diaper=\(counts.diaper) breastfeed=\(counts.breastfeed) formula=\(counts.formula) pumpedMilk=\(counts.pumpedMilk)"
             )
             return counts
         }
@@ -159,7 +148,7 @@ private func buildCounts() async -> WDailyCounts {
 
     let local = await MainActor.run { localSwiftDataCounts() }
     wlog.debug(
-        "  SwiftData counts: poop=\(local.poop) pee=\(local.pee) breastfeed=\(local.breastfeed) formula=\(local.formula)"
+        "  SwiftData counts: diaper=\(local.diaper) breastfeed=\(local.breastfeed) formula=\(local.formula)"
     )
     return local
 }
@@ -271,8 +260,7 @@ private func cloudKitCounts(familyId: String) async -> WDailyCounts? {
 
         guard ts >= todayStart else { continue }
         switch typeRaw {
-        case "poop":       counts.poop += 1
-        case "pee":        counts.pee += 1
+        case "diaper":     counts.diaper += 1
         case "breastfeed": counts.breastfeed += 1
         case "formula":    counts.formula += 1
         case "pumpedMilk": counts.pumpedMilk += 1
@@ -289,12 +277,11 @@ private func cloudKitCounts(familyId: String) async -> WDailyCounts? {
         )
     }
     wlog.debug(
-        "  CK result: poop=\(counts.poop) pee=\(counts.pee) breastfeed=\(counts.breastfeed) formula=\(counts.formula) pumpedMilk=\(counts.pumpedMilk)"
+        "  CK result: diaper=\(counts.diaper) breastfeed=\(counts.breastfeed) formula=\(counts.formula) pumpedMilk=\(counts.pumpedMilk)"
     )
 
     counts.lastActionDate = lastDates.values.max()
-    counts.lastPoopDate = lastDates["poop"]
-    counts.lastPeeDate = lastDates["pee"]
+    counts.lastDiaperDate = lastDates["diaper"]
     counts.lastBreastfeedDate = lastDates["breastfeed"]
     counts.lastFormulaDate = lastDates["formula"]
     counts.lastPumpedMilkDate = lastDates["pumpedMilk"]
@@ -334,8 +321,7 @@ private func localSwiftDataCounts() -> WDailyCounts {
         guard r.timestamp >= todayStart else { continue }
         todayCount += 1
         switch r.eventTypeRaw {
-        case "poop":       counts.poop += 1
-        case "pee":        counts.pee += 1
+        case "diaper":     counts.diaper += 1
         case "breastfeed": counts.breastfeed += 1
         case "formula":    counts.formula += 1
         case "pumpedMilk": counts.pumpedMilk += 1
@@ -348,8 +334,7 @@ private func localSwiftDataCounts() -> WDailyCounts {
     wlog.debug("  SwiftData todayRecords=\(todayCount)")
 
     counts.lastActionDate = lastDates.values.max()
-    counts.lastPoopDate = lastDates["poop"]
-    counts.lastPeeDate = lastDates["pee"]
+    counts.lastDiaperDate = lastDates["diaper"]
     counts.lastBreastfeedDate = lastDates["breastfeed"]
     counts.lastFormulaDate = lastDates["formula"]
     counts.lastPumpedMilkDate = lastDates["pumpedMilk"]
@@ -404,8 +389,7 @@ struct JudarWidgetProvider: TimelineProvider {
 
     func placeholder(in context: Context) -> JudarWidgetEntry {
         let sample = WDailyCounts(
-            poop: 3,
-            pee: 5,
+            diaper: 4,
             breastfeed: 2,
             formula: 1,
             lastActionDate: .now

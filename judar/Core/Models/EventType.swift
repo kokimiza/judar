@@ -1,16 +1,14 @@
 import Foundation
 
 enum EventType: String, CaseIterable, Codable, Sendable {
-    case poop = "poop"
-    case pee = "pee"
+    case diaper = "diaper"
     case breastfeed = "breastfeed"
     case formula = "formula"
     case pumpedMilk = "pumpedMilk"
 
     var displayName: String {
         switch self {
-        case .poop: return "うんち"
-        case .pee: return "しっこ"
+        case .diaper: return "オムツ交換"
         case .breastfeed: return "母乳"
         case .formula: return "ミルク"
         case .pumpedMilk: return "搾母乳"
@@ -19,8 +17,7 @@ enum EventType: String, CaseIterable, Codable, Sendable {
 
     var icon: String {
         switch self {
-        case .poop: return "toilet.fill"
-        case .pee: return "drop.fill"
+        case .diaper: return "hands.sparkles.fill"
         case .breastfeed: return "heart.fill"
         case .formula: return "waterbottle.fill"
         case .pumpedMilk: return "syringe.fill"
@@ -29,8 +26,7 @@ enum EventType: String, CaseIterable, Codable, Sendable {
 
     var attackType: AttackType {
         switch self {
-        case .poop: return .physical
-        case .pee: return .magical
+        case .diaper: return .physical
         case .breastfeed: return .heal
         case .formula: return .heal
         case .pumpedMilk: return .heal

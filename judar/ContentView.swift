@@ -15,12 +15,6 @@ struct ContentView: View {
                 SignInView()
                     .environment(coordinator.authSvc)
 
-            case .profileSetup:
-                if let pvm = coordinator.profileVM {
-                    ProfileEditView { coordinator.advanceToHome() }
-                        .environment(pvm)
-                }
-
             case .home:
                 if let bvm = coordinator.battleVM,
                     let pvm = coordinator.profileVM

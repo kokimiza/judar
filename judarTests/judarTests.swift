@@ -55,45 +55,45 @@ private let allResistBoss = EnemyRoster.all.first {
     @Test func zeroInitialized() {
         let c = DailyCounts()
         #expect(
-            c.poop == 0 && c.pee == 0 && c.breastfeed == 0 && c.formula == 0
+            c.diaper == 0 && c.breastfeed == 0 && c.formula == 0 && c.pumpedMilk == 0
         )
         #expect(c.total == 0)
     }
 
     @Test func subscriptGetReturnsCorrectField() {
-        let c = DailyCounts(poop: 3, pee: 5, breastfeed: 1, formula: 2)
-        #expect(c[.poop] == 3)
-        #expect(c[.pee] == 5)
-        #expect(c[.breastfeed] == 1)
-        #expect(c[.formula] == 2)
+        let c = DailyCounts(diaper: 3, breastfeed: 5, formula: 1, pumpedMilk: 2)
+        #expect(c[.diaper] == 3)
+        #expect(c[.breastfeed] == 5)
+        #expect(c[.formula] == 1)
+        #expect(c[.pumpedMilk] == 2)
     }
 
     @Test func subscriptSetMutatesCorrectField() {
         var c = DailyCounts()
-        c[.poop] = 7
-        c[.pee] = 4
-        c[.breastfeed] = 2
-        c[.formula] = 1
+        c[.diaper] = 7
+        c[.breastfeed] = 4
+        c[.formula] = 2
+        c[.pumpedMilk] = 1
         #expect(
-            c.poop == 7 && c.pee == 4 && c.breastfeed == 2 && c.formula == 1
+            c.diaper == 7 && c.breastfeed == 4 && c.formula == 2 && c.pumpedMilk == 1
         )
     }
 
     @Test func totalIsSum() {
-        let c = DailyCounts(poop: 2, pee: 3, breastfeed: 4, formula: 1)
+        let c = DailyCounts(diaper: 2, breastfeed: 3, formula: 4, pumpedMilk: 1)
         #expect(c.total == 10)
     }
 
     @Test func equatableEqual() {
-        #expect(DailyCounts(poop: 1) == DailyCounts(poop: 1))
+        #expect(DailyCounts(diaper: 1) == DailyCounts(diaper: 1))
     }
 
     @Test func equatableNotEqual() {
-        #expect(DailyCounts(poop: 1) != DailyCounts(poop: 2))
+        #expect(DailyCounts(diaper: 1) != DailyCounts(diaper: 2))
     }
 
     @Test func codableRoundtrip() throws {
-        let original = DailyCounts(poop: 3, pee: 7, breastfeed: 2, formula: 5)
+        let original = DailyCounts(diaper: 3, breastfeed: 7, formula: 2, pumpedMilk: 5)
         let data = try JSONEncoder().encode(original)
         let decoded = try JSONDecoder().decode(DailyCounts.self, from: data)
         #expect(decoded == original)
@@ -107,17 +107,17 @@ private let allResistBoss = EnemyRoster.all.first {
 @Suite("EventType") struct EventTypeTests {
 
     @Test func rawValues() {
-        #expect(EventType.poop.rawValue == "poop")
-        #expect(EventType.pee.rawValue == "pee")
+        #expect(EventType.diaper.rawValue == "diaper")
         #expect(EventType.breastfeed.rawValue == "breastfeed")
         #expect(EventType.formula.rawValue == "formula")
+        #expect(EventType.pumpedMilk.rawValue == "pumpedMilk")
     }
 
     @Test func attackTypeMapping() {
-        #expect(EventType.poop.attackType == .physical)
-        #expect(EventType.pee.attackType == .magical)
+        #expect(EventType.diaper.attackType == .physical)
         #expect(EventType.breastfeed.attackType == .heal)
         #expect(EventType.formula.attackType == .heal)
+        #expect(EventType.pumpedMilk.attackType == .heal)
     }
 
     @Test func allCasesCountIs4() {
@@ -131,7 +131,7 @@ private let allResistBoss = EnemyRoster.all.first {
     }
 
     @Test func initFromRawValue() {
-        #expect(EventType(rawValue: "poop") == .poop)
+        #expect(EventType(rawValue: "diaper") == .diaper)
         #expect(EventType(rawValue: "unknown") == nil)
     }
 }
@@ -178,18 +178,11 @@ private let allResistBoss = EnemyRoster.all.first {
         #expect(Set(types).count == 4)
     }
 
-    @Test func poop_physicalWarrior() {
-        let m = PartyMember.member(for: .poop)
-        #expect(m.baseDamage == 15)
-        #expect(m.accuracy == 0.75)
+    @Test func diaper_physicalFighter() {
+        let m = PartyMember.member(for: .diaper)
+        #expect(m.baseDamage == 14)
+        #expect(m.accuracy == 0.80)
         #expect(m.eventType.attackType == .physical)
-    }
-
-    @Test func pee_magicUser() {
-        let m = PartyMember.member(for: .pee)
-        #expect(m.baseDamage == 12)
-        #expect(m.accuracy == 0.90)
-        #expect(m.eventType.attackType == .magical)
     }
 
     @Test func breastfeed_highAccuracyHealer() {
@@ -343,7 +336,7 @@ private let allResistBoss = EnemyRoster.all.first {
     // ── Weakness: 1.8x multiplier ────────────────────────────────────────────
 
     @Test func weakness_dealsMoreThanNeutral() {
-        let m = PartyMember.member(for: .pee)
+        let m = PartyMember.member(for: .diaper)
         let neutral = BattleLogic.computePlayerDamage(
             member: m,
             isResisted: false,
@@ -362,7 +355,7 @@ private let allResistBoss = EnemyRoster.all.first {
     }
 
     @Test func weakness_damageIs1_8xNeutral() {
-        let m = PartyMember.member(for: .poop)
+        let m = PartyMember.member(for: .diaper)
         let neutral = BattleLogic.computePlayerDamage(
             member: m,
             isResisted: false,
@@ -383,7 +376,7 @@ private let allResistBoss = EnemyRoster.all.first {
     // ── Critical: 2x, ignores resist ─────────────────────────────────────────
 
     @Test func critical_dealsTwiceBaseDamage() {
-        let m = PartyMember.member(for: .poop)
+        let m = PartyMember.member(for: .diaper)
         let normal = BattleLogic.computePlayerDamage(
             member: m,
             isResisted: false,
@@ -402,7 +395,7 @@ private let allResistBoss = EnemyRoster.all.first {
     }
 
     @Test func critical_ignoresResistance() {
-        let m = PartyMember.member(for: .poop)
+        let m = PartyMember.member(for: .diaper)
         let normalHit = BattleLogic.computePlayerDamage(
             member: m,
             isResisted: false,
@@ -466,7 +459,7 @@ private let allResistBoss = EnemyRoster.all.first {
     @Test func critical_inResolveAttack_flagsIsCritical() {
         let state = makeState()
         let (_, result) = BattleLogic.resolveAttack(
-            eventType: .poop,
+            eventType: .diaper,
             state: state,
             randomSource: alwaysCritical
         )
@@ -474,13 +467,13 @@ private let allResistBoss = EnemyRoster.all.first {
         #expect(result.playerDamage > 0)
     }
 
-    @Test func magicalWeaknessEnemy_pee_flagsIsWeakness() {
-        let weakToMagic = EnemyRoster.all.first {
-            $0.weaknesses.contains(.magical)
+    @Test func physicalWeaknessEnemy_diaper_flagsIsWeakness() {
+        let weakToPhysical = EnemyRoster.all.first {
+            $0.weaknesses.contains(.physical)
         }!
-        let state = makeState(template: weakToMagic)
+        let state = makeState(template: weakToPhysical)
         let (_, result) = BattleLogic.resolveAttack(
-            eventType: .pee,
+            eventType: .diaper,
             state: state,
             randomSource: neverCritical
         )
@@ -489,13 +482,13 @@ private let allResistBoss = EnemyRoster.all.first {
     }
 
     @Test func physicalHit_nonResistEnemy_dealsPositiveDamage() {
-        let resistMagic = EnemyRoster.all.first {
-            $0.resistances.contains(.magical)
+        let resistHeal = EnemyRoster.all.first {
+            $0.resistances.contains(.heal)
                 && !$0.resistances.contains(.physical)
         }!
-        let state = makeState(template: resistMagic)
+        let state = makeState(template: resistHeal)
         let (_, result) = BattleLogic.resolveAttack(
-            eventType: .poop,
+            eventType: .diaper,
             state: state,
             randomSource: neverCritical
         )
@@ -596,7 +589,7 @@ private let allResistBoss = EnemyRoster.all.first {
         // Player hits げっぷ竜 (25 HP) for ~14 damage → survives with 11 HP → counter fires.
         let state = makeState()
         let (newState, _) = BattleLogic.resolveAttack(
-            eventType: .poop,
+            eventType: .diaper,
             state: state,
             randomSource: neverCritical
         )
@@ -607,7 +600,7 @@ private let allResistBoss = EnemyRoster.all.first {
         // tinyCritter (1 HP): any hit kills it, so counter damage == 0.
         let state = makeState(template: tinyCritter)
         let (newState, result) = BattleLogic.resolveAttack(
-            eventType: .poop,
+            eventType: .diaper,
             state: state,
             randomSource: neverCritical
         )
@@ -623,7 +616,7 @@ private let allResistBoss = EnemyRoster.all.first {
         // → counter fires → with partyHP=1, counter damage ≥ 1 → floors to 30.
         let state = makeState(template: allResistBoss, partyHP: 1)
         let (newState, _) = BattleLogic.resolveAttack(
-            eventType: .poop,
+            eventType: .diaper,
             state: state,
             randomSource: neverCritical
         )
@@ -635,7 +628,7 @@ private let allResistBoss = EnemyRoster.all.first {
     @Test func enemyDefeat_incrementsKillStreak() {
         let state = makeState(template: tinyCritter)
         let (newState, result) = BattleLogic.resolveAttack(
-            eventType: .poop,
+            eventType: .diaper,
             state: state,
             randomSource: neverCritical
         )
@@ -646,7 +639,7 @@ private let allResistBoss = EnemyRoster.all.first {
     @Test func enemyDefeat_spawnsFreshEnemy() {
         let state = makeState(template: tinyCritter)
         let (newState, result) = BattleLogic.resolveAttack(
-            eventType: .poop,
+            eventType: .diaper,
             state: state,
             randomSource: neverCritical
         )
@@ -665,7 +658,7 @@ private let allResistBoss = EnemyRoster.all.first {
         )
         let state = makeState(template: tinyCritter)
         let (newState, result) = BattleLogic.resolveAttack(
-            eventType: .poop,
+            eventType: .diaper,
             state: state,
             availableEnemies: [cloudEnemy],
             randomSource: neverCritical
@@ -677,7 +670,7 @@ private let allResistBoss = EnemyRoster.all.first {
     @Test func enemyDefeat_emptyCloudKitPool_fallsBackToRoster() {
         let state = makeState(template: tinyCritter)
         let (newState, result) = BattleLogic.resolveAttack(
-            eventType: .poop,
+            eventType: .diaper,
             state: state,
             availableEnemies: [],
             randomSource: neverCritical
@@ -721,12 +714,12 @@ private let allResistBoss = EnemyRoster.all.first {
         let seed: UInt64 = 42
         let state = makeState()
         let (s1, r1) = BattleLogic.resolveAttack(
-            eventType: .pee,
+            eventType: .diaper,
             state: state,
             randomSource: .seeded(seed)
         )
         let (s2, r2) = BattleLogic.resolveAttack(
-            eventType: .pee,
+            eventType: .diaper,
             state: state,
             randomSource: .seeded(seed)
         )
@@ -766,37 +759,37 @@ private let allResistBoss = EnemyRoster.all.first {
 
     @Test func counts_filtersToTargetDay() {
         let records = [
-            record(.poop, daysAgo: 0),
-            record(.poop, daysAgo: 0),
-            record(.poop, daysAgo: 1),
+            record(.diaper, daysAgo: 0),
+            record(.diaper, daysAgo: 0),
+            record(.diaper, daysAgo: 1),
         ]
         let c = DailyStats.counts(from: records, for: today, calendar: cal)
-        #expect(c.poop == 2)
+        #expect(c.diaper == 2)
         #expect(c.total == 2)
     }
 
     @Test func counts_multipleTypes() {
         let records = [
-            record(.poop), record(.poop),
-            record(.pee),
+            record(.diaper), record(.diaper),
+            record(.breastfeed),
             record(.breastfeed), record(.breastfeed), record(.breastfeed),
             record(.formula),
         ]
         let c = DailyStats.counts(from: records, for: today, calendar: cal)
         #expect(
-            c.poop == 2 && c.pee == 1 && c.breastfeed == 3 && c.formula == 1
+            c.diaper == 2 && c.breastfeed == 4 && c.formula == 1
         )
         #expect(c.total == 7)
     }
 
     @Test func counts_forYesterday_excludesToday() {
         let records = [
-            record(.pee, daysAgo: 1),
-            record(.pee, daysAgo: 0),
+            record(.breastfeed, daysAgo: 1),
+            record(.breastfeed, daysAgo: 0),
         ]
         let c = DailyStats.counts(from: records, for: yesterday, calendar: cal)
-        #expect(c.pee == 1)
-        #expect(c.poop == 0)
+        #expect(c.breastfeed == 1)
+        #expect(c.diaper == 0)
     }
 
     @Test func groupByDay_emptyInput_emptyOutput() {
@@ -804,7 +797,7 @@ private let allResistBoss = EnemyRoster.all.first {
     }
 
     @Test func groupByDay_singleDay_oneGroup() {
-        let records = [record(.poop), record(.pee), record(.breastfeed)]
+        let records = [record(.diaper), record(.breastfeed), record(.formula)]
         let groups = DailyStats.groupByDay(records: records, calendar: cal)
         #expect(groups.count == 1)
         #expect(groups[0].records.count == 3)
@@ -812,9 +805,9 @@ private let allResistBoss = EnemyRoster.all.first {
 
     @Test func groupByDay_daysOrderedNewestFirst() {
         let records = [
-            record(.poop, daysAgo: 0),
-            record(.pee, daysAgo: 1),
-            record(.poop, daysAgo: 2),
+            record(.diaper, daysAgo: 0),
+            record(.breastfeed, daysAgo: 1),
+            record(.diaper, daysAgo: 2),
         ]
         let groups = DailyStats.groupByDay(records: records, calendar: cal)
         #expect(groups.count == 3)
@@ -826,8 +819,8 @@ private let allResistBoss = EnemyRoster.all.first {
         let morning = cal.date(byAdding: .hour, value: 8, to: today)!
         let evening = cal.date(byAdding: .hour, value: 20, to: today)!
         let records = [
-            EventRecord(eventType: .poop, timestamp: morning),
-            EventRecord(eventType: .pee, timestamp: evening),
+            EventRecord(eventType: .diaper, timestamp: morning),
+            EventRecord(eventType: .breastfeed, timestamp: evening),
         ]
         let groups = DailyStats.groupByDay(records: records, calendar: cal)
         #expect(groups.count == 1)
@@ -837,7 +830,7 @@ private let allResistBoss = EnemyRoster.all.first {
     }
 
     @Test func groupByDay_totalRecordCountPreserved() {
-        let records = (0..<5).map { i in record(.poop, daysAgo: i % 3) }
+        let records = (0..<5).map { i in record(.diaper, daysAgo: i % 3) }
         let groups = DailyStats.groupByDay(records: records, calendar: cal)
         let total = groups.reduce(0) { $0 + $1.records.count }
         #expect(total == records.count)
@@ -845,7 +838,7 @@ private let allResistBoss = EnemyRoster.all.first {
 
     @Test func groupByDay_dayKeyIsStartOfDay() {
         let ts = cal.date(byAdding: .hour, value: 15, to: today)!
-        let records = [EventRecord(eventType: .poop, timestamp: ts)]
+        let records = [EventRecord(eventType: .diaper, timestamp: ts)]
         let groups = DailyStats.groupByDay(records: records, calendar: cal)
         #expect(groups[0].day == today)
     }
@@ -881,7 +874,7 @@ private let allResistBoss = EnemyRoster.all.first {
         let yesterday = cal.date(byAdding: .day, value: -1, to: today)!
 
         let record = BabyEventRecord(
-            eventType: .poop,
+            eventType: .diaper,
             timestamp: today.addingTimeInterval(3600)
         )
         ctx.insert(record)
@@ -908,11 +901,11 @@ private let allResistBoss = EnemyRoster.all.first {
         let yesterday = cal.date(byAdding: .day, value: -1, to: today)!
 
         let r1 = BabyEventRecord(
-            eventType: .poop,
+            eventType: .diaper,
             timestamp: today.addingTimeInterval(3600)
         )
         let r2 = BabyEventRecord(
-            eventType: .pee,
+            eventType: .breastfeed,
             timestamp: today.addingTimeInterval(7200)
         )
         ctx.insert(r1)
@@ -938,7 +931,7 @@ private let allResistBoss = EnemyRoster.all.first {
         let ctx = container.mainContext
         let today = Self.cal.startOfDay(for: Date())
         let record = BabyEventRecord(
-            eventType: .poop,
+            eventType: .diaper,
             timestamp: today.addingTimeInterval(3600)
         )
         ctx.insert(record)
@@ -946,14 +939,14 @@ private let allResistBoss = EnemyRoster.all.first {
         let vm = HistoryViewModel()
         vm.load(records: [record])
 
-        #expect(vm.groupedDays[0].counts.poop == 1)
-        #expect(vm.groupedDays[0].counts.pee == 0)
+        #expect(vm.groupedDays[0].counts.diaper == 1)
+        #expect(vm.groupedDays[0].counts.breastfeed == 0)
 
-        record.eventTypeRaw = EventType.pee.rawValue
+        record.eventTypeRaw = EventType.breastfeed.rawValue
         vm.load(records: [record])
 
-        #expect(vm.groupedDays[0].counts.poop == 0)
-        #expect(vm.groupedDays[0].counts.pee == 1)
+        #expect(vm.groupedDays[0].counts.diaper == 0)
+        #expect(vm.groupedDays[0].counts.breastfeed == 1)
     }
 
     @MainActor
@@ -963,9 +956,9 @@ private let allResistBoss = EnemyRoster.all.first {
         let today = Self.cal.startOfDay(for: Date())
         let base = today.addingTimeInterval(3600)
 
-        let r1 = BabyEventRecord(eventType: .poop, timestamp: base)
-        let r2 = BabyEventRecord(eventType: .poop, timestamp: base + 60)
-        let r3 = BabyEventRecord(eventType: .pee, timestamp: base + 120)
+        let r1 = BabyEventRecord(eventType: .diaper, timestamp: base)
+        let r2 = BabyEventRecord(eventType: .diaper, timestamp: base + 60)
+        let r3 = BabyEventRecord(eventType: .breastfeed, timestamp: base + 120)
         ctx.insert(r1)
         ctx.insert(r2)
         ctx.insert(r3)
@@ -973,15 +966,15 @@ private let allResistBoss = EnemyRoster.all.first {
         let vm = HistoryViewModel()
         vm.load(records: [r1, r2, r3])
 
-        #expect(vm.groupedDays[0].counts.poop == 2)
-        #expect(vm.groupedDays[0].counts.pee == 1)
+        #expect(vm.groupedDays[0].counts.diaper == 2)
+        #expect(vm.groupedDays[0].counts.breastfeed == 1)
 
-        r2.eventTypeRaw = EventType.breastfeed.rawValue
+        r2.eventTypeRaw = EventType.formula.rawValue
         vm.load(records: [r1, r2, r3])
 
-        #expect(vm.groupedDays[0].counts.poop == 1)
+        #expect(vm.groupedDays[0].counts.diaper == 1)
+        #expect(vm.groupedDays[0].counts.formula == 1)
         #expect(vm.groupedDays[0].counts.breastfeed == 1)
-        #expect(vm.groupedDays[0].counts.pee == 1)
         #expect(vm.groupedDays[0].counts.total == 3)
     }
 
@@ -993,8 +986,8 @@ private let allResistBoss = EnemyRoster.all.first {
         let morning = today.addingTimeInterval(3600)
         let evening = today.addingTimeInterval(72000)
 
-        let r1 = BabyEventRecord(eventType: .poop, timestamp: morning)
-        let r2 = BabyEventRecord(eventType: .pee, timestamp: evening)
+        let r1 = BabyEventRecord(eventType: .diaper, timestamp: morning)
+        let r2 = BabyEventRecord(eventType: .breastfeed, timestamp: evening)
         ctx.insert(r1)
         ctx.insert(r2)
 
@@ -1002,14 +995,14 @@ private let allResistBoss = EnemyRoster.all.first {
         vm.load(records: [r1, r2])
 
         #expect(
-            vm.groupedDays[0].records[0].eventTypeRaw == EventType.pee.rawValue
+            vm.groupedDays[0].records[0].eventTypeRaw == EventType.breastfeed.rawValue
         )
 
         r1.timestamp = evening + 3600
         vm.load(records: [r1, r2])
 
         #expect(
-            vm.groupedDays[0].records[0].eventTypeRaw == EventType.poop.rawValue
+            vm.groupedDays[0].records[0].eventTypeRaw == EventType.diaper.rawValue
         )
     }
 
@@ -1022,11 +1015,11 @@ private let allResistBoss = EnemyRoster.all.first {
         let yesterday = cal.date(byAdding: .day, value: -1, to: today)!
 
         let r1 = BabyEventRecord(
-            eventType: .poop,
+            eventType: .diaper,
             timestamp: today.addingTimeInterval(3600)
         )
         let r2 = BabyEventRecord(
-            eventType: .pee,
+            eventType: .breastfeed,
             timestamp: yesterday.addingTimeInterval(3600)
         )
         ctx.insert(r1)

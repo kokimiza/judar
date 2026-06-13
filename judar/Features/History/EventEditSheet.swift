@@ -31,7 +31,7 @@ struct EventEditSheet: View {
         self.onDelete = onDelete
         self.onRetry = onRetry
         _editTime = State(initialValue: record.timestamp)
-        _editType = State(initialValue: record.eventType ?? .poop)
+        _editType = State(initialValue: record.eventType ?? .diaper)
         _editAmount = State(initialValue: record.amount > 0 ? record.amount : 5)
     }
 

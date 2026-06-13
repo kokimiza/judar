@@ -2,7 +2,10 @@ import OSLog
 import SwiftData
 import SwiftUI
 
-private let bvlog = Logger(subsystem: "productions.jocarium.judar", category: "BattleView")
+private let bvlog = Logger(
+    subsystem: "productions.jocarium.judar",
+    category: "BattleView"
+)
 
 // MARK: - BattleView
 
@@ -45,7 +48,6 @@ struct BattleView: View {
 
                 EnemyView(
                     enemy: vm.battleState.enemy,
-                    level: profileVM.enemyLevel,
                     isFlashing: enemyFlashing
                 )
                 .padding(.horizontal, 16)
@@ -148,45 +150,34 @@ struct BattleView: View {
     // MARK: - Event grid
 
     private var eventGrid: some View {
-        VStack(spacing: 8) {
-            // Primary 4 events — 2×2
-            LazyVGrid(
-                columns: [GridItem(.flexible()), GridItem(.flexible())],
-                spacing: 8
-            ) {
-                EventButton(
-                    eventType: .poop,
-                    count: todayCounts[.poop],
-                    isAttacking: attackingType == .poop
-                ) { fireEvent(.poop) }
+        LazyVGrid(
+            columns: [GridItem(.flexible()), GridItem(.flexible())],
+            spacing: 8
+        ) {
+            EventButton(
+                eventType: .diaper,
+                count: todayCounts[.diaper],
+                isAttacking: attackingType == .diaper
+            ) { fireEvent(.diaper) }
 
-                EventButton(
-                    eventType: .pee,
-                    count: todayCounts[.pee],
-                    isAttacking: attackingType == .pee
-                ) { fireEvent(.pee) }
+            EventButton(
+                eventType: .breastfeed,
+                count: todayCounts[.breastfeed],
+                isAttacking: attackingType == .breastfeed
+            ) { fireEvent(.breastfeed) }
 
-                EventButton(
-                    eventType: .breastfeed,
-                    count: todayCounts[.breastfeed],
-                    isAttacking: attackingType == .breastfeed
-                ) { fireEvent(.breastfeed) }
+            MilkEventButton(
+                eventType: .formula,
+                count: todayCounts[.formula],
+                amount: formulaAmount,
+                isAttacking: attackingType == .formula
+            ) { showFormulaSheet = true }
 
-                MilkEventButton(
-                    eventType: .formula,
-                    count: todayCounts[.formula],
-                    amount: formulaAmount,
-                    isAttacking: attackingType == .formula
-                ) { showFormulaSheet = true }
-            }
-
-            // Supplemental — full-width pumped-milk button
             MilkEventButton(
                 eventType: .pumpedMilk,
                 count: todayCounts[.pumpedMilk],
                 amount: pumpedMilkAmount,
-                isAttacking: attackingType == .pumpedMilk,
-                compact: true
+                isAttacking: attackingType == .pumpedMilk
             ) { showPumpedMilkSheet = true }
         }
     }

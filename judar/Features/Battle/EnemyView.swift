@@ -2,7 +2,6 @@ import SwiftUI
 
 struct EnemyView: View {
     let enemy: Enemy
-    let level: Int
     var isFlashing: Bool = false
 
     var body: some View {
@@ -15,25 +14,17 @@ struct EnemyView: View {
         .padding(.vertical, 14)
         .padding(.horizontal, 16)
         .background(Color.rpgSurface.opacity(0.7))
-        .overlay(Rectangle().stroke(Color.rpgBorder.opacity(0.55), lineWidth: 1))
+        .overlay(
+            Rectangle().stroke(Color.rpgBorder.opacity(0.55), lineWidth: 1)
+        )
     }
 
     // MARK: - Name
 
     private var nameRow: some View {
-        HStack(spacing: 8) {
-            Text("Lv.\(level)")
-                .font(.system(size: 10, design: .monospaced))
-                .foregroundColor(.rpgGoldDim)
-                .padding(.horizontal, 5)
-                .padding(.vertical, 2)
-                .overlay(
-                    Rectangle().stroke(Color.rpgBorder.opacity(0.5), lineWidth: 1)
-                )
-            Text(enemy.template.name)
-                .font(.system(.title2, design: .monospaced).bold())
-                .foregroundColor(.rpgDanger)
-        }
+        Text(enemy.template.name)
+            .font(.system(.title2, design: .monospaced).bold())
+            .foregroundColor(.rpgDanger)
     }
 
     // MARK: - HP bar (20-char block visual)

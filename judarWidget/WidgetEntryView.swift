@@ -50,17 +50,17 @@ struct WidgetEntryView: View {
     private var smallLayout: some View {
         Grid(horizontalSpacing: 0, verticalSpacing: 0) {
             GridRow {
-                countCell(.poop)
+                countCell(.diaper)
                 Rectangle().fill(rpgBorder.opacity(0.35)).frame(width: 1)
-                countCell(.pee)
+                countCell(.breastfeed)
             }
             GridRow {
                 Rectangle().fill(rpgBorder.opacity(0.35)).gridCellColumns(3).frame(height: 1)
             }
             GridRow {
-                countCell(.breastfeed)
-                Rectangle().fill(rpgBorder.opacity(0.35)).frame(width: 1)
                 countCell(.formula)
+                Rectangle().fill(rpgBorder.opacity(0.35)).frame(width: 1)
+                countCell(.pumpedMilk)
             }
         }
         .padding(10)
