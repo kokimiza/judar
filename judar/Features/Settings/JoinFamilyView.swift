@@ -13,64 +13,103 @@ struct JoinFamilyView: View {
         NavigationStack {
             ZStack {
                 Color.rpgBackground.ignoresSafeArea()
-                VStack(alignment: .leading, spacing: 20) {
-                    Text("相手のユーザーIDと\n共有コードを入力")
-                        .font(.system(.body, design: .monospaced))
-                        .foregroundColor(.crtAmber)
+                if success {
+                    successView
+                } else {
+                    VStack(alignment: .leading, spacing: 20) {
+                        Text("相手のユーザーIDと\n共有コードを入力")
+                            .font(.system(.body, design: .monospaced))
+                            .foregroundColor(.crtAmber)
 
-                    inputField(label: "ユーザーID", text: $ownerUserId)
-                        .textInputAutocapitalization(.never)
+                        inputField(label: "ユーザーID", text: $ownerUserId)
+                            .textInputAutocapitalization(.never)
 
-                    inputField(label: "共有コード（6文字）", text: $ownerShareCode)
-                        .textInputAutocapitalization(.characters)
+                        inputField(label: "共有コード（6文字）", text: $ownerShareCode)
+                            .textInputAutocapitalization(.characters)
 
-                    if let err = localError {
-                        Text(err.localizedDescription)
-                            .font(.system(.caption, design: .monospaced))
-                            .foregroundColor(.crtRed)
-                    }
-
-                    Button {
-                        Task { await join() }
-                    } label: {
-                        Group {
-                            if profileVM.isJoiningFamily {
-                                Text("[ 確認中... ]")
-                            } else {
-                                Text("[ 合流する ]")
-                            }
+                        if let err = localError {
+                            Text(err.localizedDescription)
+                                .font(.system(.caption, design: .monospaced))
+                                .foregroundColor(.crtRed)
                         }
-                        .font(.system(.headline, design: .monospaced))
-                        .foregroundColor(.black)
-                        .frame(maxWidth: .infinity)
-                        .padding(12)
-                        .background(
-                            canJoin ? Color.crtAmber : Color.crtDimAmber
-                        )
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!canJoin)
 
-                    Spacer()
+                        Button {
+                            Task { await join() }
+                        } label: {
+                            Group {
+                                if profileVM.isJoiningFamily {
+                                    Text("[ 確認中... ]")
+                                } else {
+                                    Text("[ 合流する ]")
+                                }
+                            }
+                            .font(.system(.headline, design: .monospaced))
+                            .foregroundColor(.black)
+                            .frame(maxWidth: .infinity)
+                            .padding(12)
+                            .background(
+                                canJoin ? Color.crtAmber : Color.crtDimAmber
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(!canJoin)
+
+                        Spacer()
+                    }
+                    .padding(20)
                 }
-                .padding(20)
             }
             .navigationTitle("ファミリー合流")
             .navigationBarTitleDisplayMode(.inline)
-            
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("[キャンセル]") { dismiss() }
-                        .font(.system(.caption, design: .monospaced))
-                        .foregroundColor(.crtDimAmber)
+                    if !success {
+                        Button("[キャンセル]") { dismiss() }
+                            .font(.system(.caption, design: .monospaced))
+                            .foregroundColor(.crtDimAmber)
+                    }
                 }
             }
         }
-        .alert("合流成功！", isPresented: $success) {
-            Button("OK") { dismiss() }
-        } message: {
-            Text("同じファミリーとして記録が共有されます。")
+    }
+
+    private var successView: some View {
+        VStack(spacing: 20) {
+            Spacer()
+
+            Text("合流成功！")
+                .font(.system(.title3, design: .monospaced))
+                .foregroundColor(.crtAmber)
+
+            Text("同じファミリーとして記録が共有されます。\n反映するにはアプリの再起動が必要です。")
+                .font(.system(.caption, design: .monospaced))
+                .foregroundColor(.crtDimAmber)
+                .multilineTextAlignment(.center)
+
+            Button {
+                exit(0)
+            } label: {
+                Text("[ 今すぐ再起動する ]")
+                    .font(.system(.headline, design: .monospaced))
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity)
+                    .padding(12)
+                    .background(Color.crtAmber)
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                dismiss()
+            } label: {
+                Text("[ あとで再起動する ]")
+                    .font(.system(.caption, design: .monospaced))
+                    .foregroundColor(.crtDimAmber)
+            }
+            .buttonStyle(.plain)
+
+            Spacer()
         }
+        .padding(20)
     }
 
     // MARK: - Helpers
