@@ -91,6 +91,8 @@ final class BattleViewModel {
                 record.syncErrorRaw = error.localizedDescription
                 vmlog.error("  ❌ CK push failed type=\(record.eventTypeRaw, privacy: .public) error=\(error, privacy: .public)")
             }
+            // Widget reads CloudKit as source of truth — re-sync now that the push landed (or failed).
+            WidgetDataBridge.requestWidgetTimelineReload()
         }
     }
 

@@ -110,12 +110,12 @@ struct WidgetEntryView: View {
 
     @ViewBuilder
     private func timeAgoText(for date: Date?, size: CGFloat) -> some View {
-        let label = date.flatMap { isRecentEnough($0) ? minuteAgoLabel($0) : nil }
+        let label = date.flatMap { isRecentEnough($0) ? elapsedLabel($0) : nil }
         if let label {
             Text(label)
                 .font(.system(size: size, weight: .semibold, design: .monospaced))
                 .foregroundStyle(rpgGold)
-                .lineLimit(2)
+                .lineLimit(1)
                 .minimumScaleFactor(0.75)
                 .multilineTextAlignment(.center)
         } else {
@@ -125,11 +125,11 @@ struct WidgetEntryView: View {
         }
     }
 
-    private func minuteAgoLabel(_ date: Date) -> String {
-        let minutes = Int(entry.date.timeIntervalSince(date) / 60)
-        if minutes < 1  { return "1分未満" }
-        if minutes < 60 { return "\(minutes)分前" }
-        return "\(minutes / 60)時間前"
+    private func elapsedLabel(_ date: Date) -> String {
+        let minutes = max(0, Int(entry.date.timeIntervalSince(date) / 60))
+        let hours = minutes / 60
+        let remainder = minutes % 60
+        return String(format: "%dH %02dM", hours, remainder)
     }
 
     private func isRecentEnough(_ date: Date) -> Bool {
