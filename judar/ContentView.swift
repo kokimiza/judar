@@ -43,7 +43,7 @@ struct ContentView: View {
             VStack(spacing: 0) {
                 Spacer()
                 VStack(spacing: 8) {
-                    Text("judar")
+                    Text("R メモ")
                         .font(.system(size: 48, design: .monospaced).bold())
                         .foregroundColor(.rpgGold)
                     Text("赤ちゃん育児記録 RPG")

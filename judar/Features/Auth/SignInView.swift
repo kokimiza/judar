@@ -13,7 +13,7 @@ struct SignInView: View {
 
                 // Title block
                 VStack(spacing: 8) {
-                    Text("judar")
+                    Text("R メモ")
                         .font(.system(size: 48, design: .monospaced).bold())
                         .foregroundColor(.crtAmber)
                     Text("赤ちゃん育児記録 RPG")

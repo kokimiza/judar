@@ -438,7 +438,7 @@ struct JudarWidget: Widget {
             entry in
             WidgetEntryView(entry: entry)
         }
-        .configurationDisplayName("judar")
+        .configurationDisplayName("R メモ")
         .description("今日の育児記録")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
