@@ -62,6 +62,27 @@ final class ProfileViewModel {
         profile = nil
     }
 
+    // MARK: - Account deletion (App Store Guideline 5.1.1(v))
+
+    // Removes this user's CloudKit profile record and all local data.
+    // Family-shared records (events, battle progress) belong to the family,
+    // not this single account, so they are left intact for other members.
+    func deleteAccount() async {
+        if cloudKit.isAvailable, let p = profile, !p.userId.isEmpty {
+            try? await cloudKit.deleteProfile(userId: p.userId)
+        }
+
+        for record in (try? modelContext.fetch(FetchDescriptor<BabyEventRecord>())) ?? [] {
+            modelContext.delete(record)
+        }
+        for record in (try? modelContext.fetch(FetchDescriptor<CachedBattleProgress>())) ?? [] {
+            modelContext.delete(record)
+        }
+
+        clearLocalProfile()
+        try? modelContext.save()
+    }
+
     func loadOrCreate() async {
         guard profile == nil else { return }
         isLoading = true

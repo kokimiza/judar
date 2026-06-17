@@ -142,6 +142,15 @@ final class CloudKitSyncService {
         // All other CKErrors propagate — verifyWithCloudKit maps them to .unavailable
     }
 
+    func deleteProfile(userId: String) async throws {
+        let recordID = CKRecord.ID(recordName: userId)
+        do {
+            _ = try await publicDB.deleteRecord(withID: recordID)
+        } catch let error as CKError where error.code == .unknownItem {
+            // already gone — nothing to do
+        }
+    }
+
     // Verify shareCode → return the owner's familyId
     func joinFamily(ownerUserId: String, shareCode: String) async throws
         -> String

@@ -1,6 +1,13 @@
 import SwiftData
 import SwiftUI
 
+// MARK: - HistoryTab
+
+private enum HistoryTab: String, CaseIterable {
+    case timeline = "タイムツリー"
+    case amount = "量"
+}
+
 // MARK: - HistoryView
 
 struct HistoryView: View {
@@ -11,6 +18,7 @@ struct HistoryView: View {
 
     @State private var dayRange: Int = 3
     @State private var selectedCell: GridCell?
+    @State private var selectedTab: HistoryTab = .timeline
 
     // Async index state
     @Environment(BattleViewModel.self) private var battleVM
@@ -79,15 +87,57 @@ struct HistoryView: View {
     private var mainContent: some View {
         VStack(spacing: 0) {
             rangeSelector
+            tabSelector
             crtLine
-            HistoryTimeGrid(
-                days: days,
-                countIdx: countIdx,
-                unsyncIdx: unsyncIdx
-            ) { cell in
-                selectedCell = cell
+            switch selectedTab {
+            case .timeline:
+                HistoryTimeGrid(
+                    days: days,
+                    countIdx: countIdx,
+                    unsyncIdx: unsyncIdx
+                ) { cell in
+                    selectedCell = cell
+                }
+            case .amount:
+                ScrollView { HistoryAmountChart(data: amountData) }
             }
         }
+    }
+
+    private var amountData: [DailyAmount] {
+        let raw = records.compactMap {
+            r -> (eventType: EventType, timestamp: Date, amount: Int)? in
+            guard let et = r.eventType else { return nil }
+            return (et, r.timestamp, r.amount)
+        }
+        return AmountStats.dailyTotals(days: days, records: raw)
+    }
+
+    private var tabSelector: some View {
+        HStack(spacing: 4) {
+            ForEach(HistoryTab.allCases, id: \.self) { tab in
+                let active = selectedTab == tab
+                Button {
+                    selectedTab = tab
+                } label: {
+                    Text(tab.rawValue)
+                        .font(.system(.caption, design: .monospaced).bold())
+                        .foregroundColor(active ? .rpgBackground : .rpgGoldDim)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                        .background(
+                            active ? Color.rpgGold : Color.clear,
+                            in: RoundedRectangle(cornerRadius: 8)
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(4)
+        .background(Color.rpgSurface, in: RoundedRectangle(cornerRadius: 10))
+        .padding(.horizontal, 10)
+        .padding(.bottom, 6)
+        .animation(.easeInOut(duration: 0.15), value: selectedTab)
     }
 
     // MARK: - Loading views

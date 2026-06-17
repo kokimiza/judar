@@ -2,13 +2,34 @@
   "sourceLanguage" : "ja",
   "strings" : {
     "" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : ""
+          }
+        }
+      }
     },
     "  ┌─────────────┐\n  │ *** START ***│\n  └─────────────┘" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "  ┌─────────────┐\n  │ *** START ***│\n  └─────────────┘"
+          }
+        }
+      }
     },
     "[ あとで再起動する ]" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[ RESTART LATER ]"
+          }
+        }
+      }
     },
     "[ ゲストとして続ける ]" : {
       "localizations" : {
@@ -42,7 +63,14 @@
       }
     },
     "[ 今すぐ再起動する ]" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[ RESTART NOW ]"
+          }
+        }
+      }
     },
     "[ 保存する ]" : {
       "localizations" : {
@@ -55,7 +83,14 @@
       }
     },
     "[ 再接続 ]" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[ RECONNECT ]"
+          }
+        }
+      }
     },
     "[ 再試行 ]" : {
       "localizations" : {
@@ -98,13 +133,34 @@
       }
     },
     "[%@]" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[%@]"
+          }
+        }
+      }
     },
     "[LOG]" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[LOG]"
+          }
+        }
+      }
     },
     "[SET]" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "[SET]"
+          }
+        }
+      }
     },
     "[キャンセル]" : {
       "localizations" : {
@@ -157,10 +213,23 @@
       }
     },
     "%lld" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld"
+          }
+        }
+      }
     },
     "%lld / %lld" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld / %lld"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "new",
@@ -170,7 +239,14 @@
       }
     },
     "%lld ml" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ml"
+          }
+        }
+      }
     },
     "%lld 件" : {
       "localizations" : {
@@ -194,6 +270,12 @@
     },
     "%lld回  %lld ml" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld×  %lld ml"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "new",
@@ -213,7 +295,14 @@
       }
     },
     "> %@" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "> %@"
+          }
+        }
+      }
     },
     "> %lld 件の記録" : {
       "localizations" : {
@@ -241,6 +330,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "> Sync available once iCloud is enabled"
+          }
+        }
+      }
+    },
+    "> この期間の記録はありません" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "> No records for this period"
           }
         }
       }
@@ -319,13 +418,64 @@
       }
     },
     "iCloud に接続できません" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cannot connect to iCloud"
+          }
+        }
+      }
     },
-    "judar" : {
-
+    "ml" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ml"
+          }
+        }
+      }
     },
     "PARTY HP" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PARTY HP"
+          }
+        }
+      }
+    },
+    "R メモ" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "R Memo"
+          }
+        }
+      }
+    },
+    "アカウントを削除" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Account"
+          }
+        }
+      }
+    },
+    "アカウントを削除しますか？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete your account?"
+          }
+        }
+      }
     },
     "あとから設定画面で変更できます" : {
       "extractionState" : "stale",
@@ -354,6 +504,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Data sharing and backup are unavailable in guest mode"
+          }
+        }
+      }
+    },
+    "この操作は取り消せません。育児記録とプロフィールが完全に削除されます。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This action cannot be undone. Your care records and profile will be permanently deleted."
           }
         }
       }
@@ -399,7 +559,14 @@
       }
     },
     "プロフィール確認にはネットワーク接続が必要です" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A network connection is required to verify your profile"
+          }
+        }
+      }
     },
     "ミルク量" : {
       "localizations" : {
@@ -451,6 +618,16 @@
         }
       }
     },
+    "削除中..." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleting..."
+          }
+        }
+      }
+    },
     "合流成功！" : {
       "localizations" : {
         "en" : {
@@ -473,7 +650,14 @@
       }
     },
     "同じファミリーとして記録が共有されます。\n反映するにはアプリの再起動が必要です。" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Records will be shared within the same family.\nRestart the app for this to take effect."
+          }
+        }
+      }
     },
     "同期中..." : {
       "localizations" : {
@@ -505,6 +689,16 @@
         }
       }
     },
+    "日付" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date"
+          }
+        }
+      }
+    },
     "未同期レコード" : {
       "localizations" : {
         "en" : {
@@ -521,6 +715,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enter the other user's ID\nand shared code"
+          }
+        }
+      }
+    },
+    "種類" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Type"
           }
         }
       }
@@ -586,7 +790,14 @@
       }
     },
     "量" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amount"
+          }
+        }
+      }
     }
   },
   "version" : "1.2"

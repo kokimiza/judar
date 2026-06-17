@@ -14,6 +14,7 @@ struct BattleView: View {
     @Environment(ProfileViewModel.self) private var profileVM
     @Environment(AuthService.self) private var authSvc
     @Environment(ThemeManager.self) private var themeManager
+    @Environment(LaunchCoordinator.self) private var coordinator
     @Query(sort: \BabyEventRecord.timestamp, order: .reverse)
     private var records: [BabyEventRecord]
 
@@ -76,6 +77,7 @@ struct BattleView: View {
                 .environment(profileVM)
                 .environment(authSvc)
                 .environment(themeManager)
+                .environment(coordinator)
         }
         .sheet(isPresented: $showFormulaSheet) {
             MilkAmountSheet(title: "> ミルク量を選択", amount: $formulaAmount) {

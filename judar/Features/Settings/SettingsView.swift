@@ -8,12 +8,15 @@ struct SettingsView: View {
     @Environment(ProfileViewModel.self) private var profileVM
     @Environment(AuthService.self) private var authSvc
     @Environment(ThemeManager.self) private var themeManager
+    @Environment(LaunchCoordinator.self) private var coordinator
 
     @Query(sort: \BabyEventRecord.timestamp, order: .reverse)
     private var records: [BabyEventRecord]
 
     @State private var isSyncing = false
     @State private var lastSyncMessage: String?
+    @State private var showDeleteConfirm = false
+    @State private var isDeletingAccount = false
 
     private var unsyncedCount: Int {
         records.filter { !$0.isSynced }.count
@@ -53,6 +56,12 @@ struct SettingsView: View {
                         } header: {
                             sectionHeader("アカウント")
                         }
+                    } else if authSvc.isAuthenticated {
+                        Section {
+                            deleteAccountRow
+                        } header: {
+                            sectionHeader("アカウント")
+                        }
                     }
 
                     Section {
@@ -74,6 +83,49 @@ struct SettingsView: View {
                         .foregroundColor(.rpgGold)
                 }
             }
+            .alert(
+                "アカウントを削除しますか？",
+                isPresented: $showDeleteConfirm
+            ) {
+                Button("削除する", role: .destructive) { deleteAccount() }
+                Button("キャンセル", role: .cancel) {}
+            } message: {
+                Text("この操作は取り消せません。育児記録とプロフィールが完全に削除されます。")
+            }
+        }
+    }
+
+    // MARK: - Account deletion
+
+    private var deleteAccountRow: some View {
+        Button {
+            showDeleteConfirm = true
+        } label: {
+            HStack(spacing: 8) {
+                if isDeletingAccount {
+                    ProgressView()
+                        .tint(.rpgDanger)
+                        .scaleEffect(0.8)
+                    Text("削除中...")
+                } else {
+                    Image(systemName: "trash")
+                    Text("アカウントを削除")
+                }
+            }
+            .font(.system(.caption, design: .monospaced).bold())
+            .foregroundColor(.rpgDanger)
+        }
+        .buttonStyle(.plain)
+        .disabled(isDeletingAccount)
+        .listRowBackground(Color.rpgSurface)
+    }
+
+    private func deleteAccount() {
+        isDeletingAccount = true
+        Task {
+            await profileVM.deleteAccount()
+            coordinator.resetToSignIn()
+            dismiss()
         }
     }
 

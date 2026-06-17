@@ -23,6 +23,7 @@ struct ContentView: View {
                         .environment(bvm)
                         .environment(pvm)
                         .environment(coordinator.authSvc)
+                        .environment(coordinator)
                 }
             }
         }

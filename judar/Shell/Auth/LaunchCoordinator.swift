@@ -99,6 +99,14 @@ final class LaunchCoordinator {
         await start(modelContext: modelContext)
     }
 
+    // Called after account deletion (or manual sign-out) to drop back to SignInView
+    func resetToSignIn() {
+        authSvc.clearAuth()
+        profileVM = nil
+        battleVM = nil
+        phase = .signIn
+    }
+
     // MARK: - Private
 
     private func verifyAndRoute(pvm: ProfileViewModel, bvm: BattleViewModel)
